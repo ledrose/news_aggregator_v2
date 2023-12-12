@@ -1,6 +1,6 @@
-use actix_web::{web::{self, Data}, App, HttpServer, Responder, get};
+use actix_web::{web::{self, Data, Json}, App, HttpServer, Responder, get, HttpResponse};
 
-use rust_news_aggregator_v2::{self, db::{establish_connection, DBPool}};
+use rust_news_aggregator_v2::{self, db::{establish_connection, DBPool, models::UserRegister}, api::auth};
 
 
 #[actix_web::main]
@@ -10,6 +10,8 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .app_data(web::Data::new(pg_conn.clone()))
             .service(hello_world)
+            .service(auth::add_user)
+            .service(auth::auth)
     })
     .bind(("127.0.0.1", 8080))?
     .run()
@@ -20,4 +22,3 @@ async fn main() -> std::io::Result<()> {
 async fn hello_world(pool: Data<DBPool>) -> impl Responder {
     "Hello world"
 }
-

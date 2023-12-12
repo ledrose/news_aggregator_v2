@@ -1,3 +1,5 @@
+pub mod models;
+pub mod user;
 use diesel::{PgConnection, r2d2::{ConnectionManager, self}, pg::Pg};
 use dotenv::dotenv;
 use anyhow::{Result,Ok};
@@ -13,3 +15,4 @@ pub fn establish_connection() -> Result<DBPool> {
         .expect("Expected to crete pool");
     Ok(conn_pool)
 }
+
