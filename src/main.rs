@@ -1,0 +1,23 @@
+use actix_web::{web::{self, Data}, App, HttpServer, Responder, get};
+
+use rust_news_aggregator_v2::{self, db::{establish_connection, DBPool}};
+
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    let pg_conn = establish_connection().expect("Established connection with db");
+    HttpServer::new(move || {
+        App::new()
+            .app_data(web::Data::new(pg_conn.clone()))
+            .service(hello_world)
+    })
+    .bind(("127.0.0.1", 8080))?
+    .run()
+    .await
+}
+
+#[get("/")]
+async fn hello_world(pool: Data<DBPool>) -> impl Responder {
+    "Hello world"
+}
+
