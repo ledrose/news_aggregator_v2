@@ -6,13 +6,15 @@ use crate::{error::ApiError, schema::{roles, users}};
 
 use super::models::*;
 
-pub fn auth_inter(user_form: &UserForm, conn: &mut PgConnection) -> Result<User> {
-    use crate::schema::users::dsl::*;
-    let user_db = users
-        .select(User::as_select())
+pub fn auth_inter(user_form: &UserForm, conn: &mut PgConnection) -> Result<UserWithRole> {
+    // use crate::schema::users::dsl::*;
+    let user_db: (User,Role) = users::table
+        .inner_join(roles::table)
+        .filter(users::email.eq(&user_form.email))
+        .select((User::as_select(),Role::as_select()))
         .first(conn)?;
-    if verify(&user_form.password, &user_db.passwd_hash)? {
-        Ok(user_db)
+    if verify(&user_form.password, &user_db.0.passwd_hash)? {
+        Ok(UserWithRole { id: user_db.0.id, email: user_db.0.email, role: user_db.1.name })
     } else {
         Err(ApiError::LoginError.into())
     }
@@ -39,7 +41,7 @@ pub fn add_user_inter(user_form: &UserRegister, conn: &mut PgConnection) -> Resu
 
 #[cfg(test)]
 mod tests {
-    use crate::db::{establish_connection, models::{UserInsert, UserRegister, UserForm}};
+    use crate::db::{establish_connection, user::models::{UserRegister, UserForm}};
 
     use super::{add_user_inter, auth_inter};
 

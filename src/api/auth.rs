@@ -1,8 +1,14 @@
-use actix_web::{post, web::{Data, Json, self}, Responder, HttpResponse};
-use crate::{db::{models::*, DBPool, user::{add_user_inter, auth_inter}}, error::ApiError};
+use actix_web::{post, web::{Data, Json, self}, Responder, HttpResponse, Scope};
+use crate::{db::{DBPool, user::{models::*, user::*}}, error::ApiError};
 
-#[post("/add")]
-pub async fn add_user(pool: Data<DBPool>,user: Json<UserRegister>) -> actix_web::Result<impl Responder> {
+pub fn auth_scope() -> Scope {
+    Scope::new("/auth")
+        .service(register)
+        .service(login)
+}
+
+#[post("/register")]
+pub async fn register(pool: Data<DBPool>,user: Json<UserRegister>) -> actix_web::Result<impl Responder> {
     let user_db = web::block(move || {
         let mut conn = pool.get()?;
         add_user_inter(&user, &mut conn)
@@ -13,8 +19,8 @@ pub async fn add_user(pool: Data<DBPool>,user: Json<UserRegister>) -> actix_web:
 }
 
 
-#[post("/auth")]
-pub async fn auth(pool: Data<DBPool>,user: Json<UserForm>) -> actix_web::Result<impl Responder> {
+#[post("/login")]
+pub async fn login(pool: Data<DBPool>,user: Json<UserForm>) -> actix_web::Result<impl Responder> {
     let user_db = web::block(move || {
         let mut conn = pool.get()?;
         auth_inter(&user, &mut conn)

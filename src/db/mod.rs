@@ -1,4 +1,3 @@
-pub mod models;
 pub mod user;
 use diesel::{PgConnection, r2d2::{ConnectionManager, self}, pg::Pg};
 use dotenv::dotenv;
