@@ -4,15 +4,15 @@ CREATE TABLE sources (
     name VARCHAR NOT NULL
 );
 
-CREATE TABLE theme (
+CREATE TABLE themes (
     id SERIAL PRIMARY KEY,
-    theme_name VARCHAR
+    theme_name VARCHAR NOT NULL
 );
 
 CREATE TABLE sourceThemes (
     id SERIAL PRIMARY KEY,
     source_id INTEGER NOT NULL REFERENCES sources(id),
-    theme_id INTEGER NOT NULL REFERENCES theme(id),
+    theme_id INTEGER NOT NULL REFERENCES themes(id),
     source_theme_name VARCHAR NOT NULL
 );
 
@@ -20,7 +20,7 @@ CREATE TABLE news (
     id SERIAL PRIMARY KEY,
     header VARCHAR NOT NULL,
     source_id INTEGER NOT NULL REFERENCES sources(id),
-    theme_id INTEGER NOT NULL REFERENCES theme(id),
+    theme_id INTEGER NOT NULL REFERENCES themes(id),
     text VARCHAR NOT NULL
 );
 
