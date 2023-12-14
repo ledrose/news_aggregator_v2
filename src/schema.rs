@@ -50,7 +50,7 @@ diesel::table! {
 }
 
 diesel::joinable!(news -> sources (source_id));
-diesel::joinable!(news -> themes (theme_id));
+diesel::joinable!(news -> sourcethemes (theme_id));
 diesel::joinable!(sourcethemes -> sources (source_id));
 diesel::joinable!(sourcethemes -> themes (theme_id));
 diesel::joinable!(users -> roles (role_id));

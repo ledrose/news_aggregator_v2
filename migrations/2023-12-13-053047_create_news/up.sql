@@ -12,15 +12,17 @@ CREATE TABLE themes (
 CREATE TABLE sourceThemes (
     id SERIAL PRIMARY KEY,
     source_id INTEGER NOT NULL REFERENCES sources(id),
-    theme_id INTEGER NOT NULL REFERENCES themes(id),
-    source_theme_name VARCHAR UNIQUE NOT NULL
+    theme_id INTEGER NOT NULL REFERENCES themes(id) DEFAULT 1,
+    source_theme_name VARCHAR NOT NULL,
+    UNIQUE(source_id,source_theme_name)
 );
 
 CREATE TABLE news (
     id SERIAL PRIMARY KEY,
     header VARCHAR NOT NULL,
     source_id INTEGER NOT NULL REFERENCES sources(id),
-    theme_id INTEGER NOT NULL REFERENCES themes(id),
+    theme_id INTEGER NOT NULL REFERENCES sourceThemes(id) DEFAULT 1,
     text VARCHAR NOT NULL
 );
 
+INSERT INTO themes VALUES (1,'Другое');
