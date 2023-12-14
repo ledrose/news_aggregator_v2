@@ -8,18 +8,18 @@ use crate::{schema::{news, themes, sources, sourcethemes::{self, source_theme_na
 use super::models::*;
 
 
-pub fn get_news(id0: i64, amount: i64, conn: &mut PgConnection) -> Vec<NewsFull> {
-    todo!();
-    // news::table
-    //     .left_join(sourcethemes::table)
-    //     .left_join(sources::table)
-    //     .order_by(news::id)
-    //     .offset(id0)
-    //     .limit(amount)
-    //     .select((NewEntry::as_select(),Option::<Theme>::as_select(),Option::<Source>::as_select()))
-    //     .load::<(NewEntry,Option<Theme>,Option<Source>)>(conn)
-    //     .unwrap_or_default()
-    //     .into_iter().filter_map(|x| x.try_into().ok()).collect_vec()
+pub fn get_news(max_id: i32, amount: i64, conn: &mut PgConnection) -> Vec<NewsFull> {
+    // todo!();
+    news::table
+        .left_join(sourcethemes::table.left_join(themes::table))
+        .left_join(sources::table)
+        .filter(news::id.le(max_id))
+        .order_by(news::id.desc())
+        .limit(amount)
+        .select((NewEntry::as_select(),Option::<Theme>::as_select(),Option::<Source>::as_select()))
+        .load::<(NewEntry,Option<Theme>,Option<Source>)>(conn)
+        .unwrap_or_default()
+        .into_iter().filter_map(|x| x.try_into().ok()).collect_vec()
 }
 
 
@@ -103,7 +103,7 @@ mod tests {
 
     use crate::db::{establish_connection, news::models::NewsInsert};
 
-    use super::{get_sources_with_def_insert, get_source_themes_with_def_insert, add_news_db};
+    use super::{get_sources_with_def_insert, get_source_themes_with_def_insert, get_news, add_news_db};
 
 
     #[test]
@@ -134,6 +134,15 @@ mod tests {
             NewsInsert { header: "lorum".to_owned(), source: "RT".to_owned(), theme_source: "Sport".to_owned(), text: "lorum".to_owned() }
         ];
         let res = add_news_db(news_vec, &mut conn).expect("Everything should be fine!");
+        // println!("{res:?}");
+    }
+
+    #[test]
+    fn get_news_test() {
+        let mut conn = establish_connection().expect("db conn")
+            .get().expect("db conn 2");
+        let res = get_news(0,6, &mut conn);
+        println!("{res:?}")
         // println!("{res:?}");
     }
 }

@@ -6,7 +6,7 @@ use crate::{db::{DBPool, news::{news::{get_news, add_news_db}, models::NewsInser
 
 #[derive(Serialize,Deserialize,Debug)]
 pub struct NewsBatchInfo {
-    id0: i64,
+    max_id: i32,
     amount: i64
 }
 
@@ -19,7 +19,7 @@ pub fn news_scope() -> Scope {
 pub async fn news(pool: Data<DBPool>,news_batch: Json<NewsBatchInfo>) -> actix_web::Result<impl Responder> {
     let res = web::block(move || {
         let mut conn = pool.get()?;
-        Ok(get_news(news_batch.id0, news_batch.amount, &mut conn))
+        Ok(get_news(news_batch.max_id, news_batch.amount, &mut conn))
     }).await?
     .map_err(|_: Error| error::ApiError::InternalError)?;
     Ok(HttpResponse::Ok().json(res))
