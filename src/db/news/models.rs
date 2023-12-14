@@ -31,7 +31,7 @@ pub struct Theme {
     pub id: i32,
     pub theme_name: String
 }
-
+#[derive(Debug,Serialize,Deserialize)]
 pub struct NewsFull {
     pub id: i32,
     pub header: String,
