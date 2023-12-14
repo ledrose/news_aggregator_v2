@@ -9,7 +9,7 @@ INSERT INTO roles VALUES (2,'admin');
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    email VARCHAR NOT NULL,
+    email VARCHAR UNIQUE NOT NULL,
     passwd_hash VARCHAR NOT NULL,
     role_id INTEGER NOT NULL REFERENCES roles(id) DEFAULT 1
 );

@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use diesel::{Queryable, Selectable, associations::{Associations, Identifiable}};
+use diesel::{Queryable, Selectable, associations::{Associations, Identifiable}, prelude::Insertable};
 use serde::{Serialize, Deserialize};
 
 
@@ -31,6 +31,19 @@ pub struct Theme {
     pub id: i32,
     pub theme_name: String
 }
+
+#[derive(Selectable, Identifiable, Associations, Queryable,Debug,Serialize,Deserialize)]
+#[diesel(table_name = crate::schema::sourcethemes)]
+#[diesel(belongs_to(Theme))]
+#[diesel(belongs_to(Source))]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct SourceTheme {
+    pub id: i32,
+    pub source_id: i32,
+    pub theme_id: i32,
+    pub source_theme_name: String 
+}
+
 #[derive(Debug,Serialize,Deserialize)]
 pub struct NewsFull {
     pub id: i32,
@@ -40,16 +53,14 @@ pub struct NewsFull {
     pub text: String
 }
 
-impl From<(NewEntry,Source,Theme)> for NewsFull {
-    fn from(value: (NewEntry,Source,Theme)) -> Self {
-        NewsFull {
-            id: value.0.id,
-            header: value.0.header,
-            source: value.1.name, 
-            theme: value.2.theme_name, 
-            text: value.0.text 
-        }
-    }
+#[derive(Debug,Serialize,Deserialize)]
+// #[diesel(table_name = crate::schema::news)]
+// #[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct NewsInsert {
+    pub header: String,
+    pub source: String,
+    pub theme_source: String,
+    pub text: String
 }
 
 impl TryFrom<(NewEntry,Option<Theme>,Option<Source>)> for NewsFull {
