@@ -6,10 +6,14 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+actix-cors = "0.6.5"
+actix-rt = "2.9.0"
 actix-session = { version = "0.8.0", features = ["cookie-session"] }
 actix-web = "4.4.0"
 anyhow = "1.0.75"
+apalis = { version = "0.4.7", features = ["postgres"] }
 bcrypt = "0.15.0"
+chrono = "0.4.31"
 derive_more = "0.99.17"
 diesel = {version ="2.1.4", features=["postgres", "r2d2", "chrono", "postgres_backend"]}
 diesel_migrations = { version = "2.1.0", features = ["postgres"] }
