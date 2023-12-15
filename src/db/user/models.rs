@@ -38,5 +38,5 @@ pub struct UserForm {
 pub struct UserRegister {
     pub email: String,
     pub password: String,
-    pub role: String
+    // pub role: String
 }

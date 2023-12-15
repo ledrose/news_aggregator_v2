@@ -22,21 +22,28 @@ pub fn auth_inter(user_form: &UserForm, conn: &mut PgConnection) -> Result<UserW
 
 pub fn add_user_inter(user_form: &UserRegister, conn: &mut PgConnection) -> Result<User> {
     // use crate::schema::users::dsl::*;
-    let query_role_id: i32 = roles::table
-        .filter(roles::name.eq(&user_form.role))
-        .select(roles::id)
-        .first(conn)?;
+    // let query_role_id: i32 = roles::table
+    //     .filter(roles::name.eq(&user_form.role))
+    //     .select(roles::id)
+    //     .first(conn)?;
     let ret = diesel::insert_into(users::table)
         .values((
             users::email.eq(&user_form.email),
             users::passwd_hash.eq(&hash(&user_form.password, DEFAULT_COST)?),
-            users::role_id.eq(query_role_id)
+            // users::role_id.eq(query_role_id)
         ))
         .returning(User::as_returning())
         .get_result(conn)?;
     Ok(ret)
-    // diesel::insert_into(users)
-    //     .
+}
+
+pub fn get_role_db(email: &str, conn: &mut PgConnection) -> Result<Role> {
+    let role: Role = users::table
+        .inner_join(roles::table)
+        .filter(users::email.eq(email))
+        .select(Role::as_select())
+        .first::<Role>(conn)?;
+    Ok(role)
 }
 
 #[cfg(test)]
@@ -50,8 +57,7 @@ mod tests {
         let mut conn = establish_connection().unwrap().get().unwrap();
         let user = UserRegister {
             email: "1".to_string(),
-            password: "2".to_string(),
-            role: "user".to_string(),
+            password: "2".to_string()
         };
         add_user_inter(&user, &mut conn).unwrap();
     }
