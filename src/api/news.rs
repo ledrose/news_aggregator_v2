@@ -13,6 +13,7 @@ pub struct NewsBatchInfo {
 pub fn news_scope() -> Scope {
     Scope::new("/news")
         .service(news)
+        .service(add_news)
 }
 
 #[post("/batch")]
@@ -25,10 +26,11 @@ pub async fn news(pool: Data<DBPool>,news_batch: Json<NewsBatchInfo>) -> actix_w
     Ok(HttpResponse::Ok().json(res))
 }
 
-pub async fn add_news(pool: Data<DBPool>, news_vec: Vec<NewsInsert>) -> actix_web::Result<impl Responder> {
+#[post("/add")]
+pub async fn add_news(pool: Data<DBPool>, news_vec: Json<Vec<NewsInsert>>) -> actix_web::Result<impl Responder> {
     let res = web::block(move || {
         let mut conn = pool.get()?;
-        add_news_db(news_vec,&mut conn)
+        add_news_db(news_vec.0,&mut conn)
     }).await?
     .map_err(|_| error::ApiError::InternalError)?;
     Ok(HttpResponse::Ok().json(res))

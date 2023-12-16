@@ -21,6 +21,8 @@ diesel::table! {
     sources (id) {
         id -> Int4,
         name -> Varchar,
+        source_type -> Nullable<Varchar>,
+        link -> Nullable<Varchar>,
     }
 }
 

@@ -1,7 +1,9 @@
 -- Your SQL goes here
 CREATE TABLE sources (
     id SERIAL PRIMARY KEY,
-    name VARCHAR UNIQUE NOT NULL
+    name VARCHAR UNIQUE NOT NULL,
+    source_type VARCHAR DEFAULT NULL,
+    link VARCHAR DEFAULT NULL
 );
 
 CREATE TABLE themes (

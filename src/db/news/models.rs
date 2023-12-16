@@ -21,14 +21,16 @@ pub struct NewEntry {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Source {
     pub id: i32,
-    pub name: String
+    pub name: String,
+    pub source_type: Option<String>,
+    pub link: Option<String>
 }
 
 #[derive(Insertable,Debug,Serialize,Deserialize)]
 #[diesel(table_name = crate::schema::sources)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct SourceInsert<'a> {
-    pub name: &'a str
+    pub name: &'a str,
 }
 
 impl<'a> From<&'a str> for SourceInsert<'a> {
@@ -83,18 +85,16 @@ pub struct NewsFull {
 }
 
 #[derive(Debug,Serialize,Deserialize,PartialEq, Eq,Hash)]
-// #[diesel(table_name = crate::schema::news)]
-// #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewsInsert {
     pub header: String,
-    pub source: String,
+    pub source_id: i32,
     pub theme_source: String,
     pub text: String
 }
 
-impl<'a> From<(&'a NewsInsert,&'a Source,&'a SourceTheme)> for NewsDBInsert<'a> {
-    fn from(value: (&'a NewsInsert,&'a Source,&'a SourceTheme)) -> Self {
-        Self { header: &value.0.header, source_id: value.1.id, theme_id: value.2.id, text: &value.0.text}
+impl<'a> From<(&'a NewsInsert,&'a SourceTheme)> for NewsDBInsert<'a> {
+    fn from(value: (&'a NewsInsert,&'a SourceTheme)) -> Self {
+        Self { header: &value.0.header, source_id: value.0.source_id, theme_id: value.1.id, text: &value.0.text }
     }
 }
 
