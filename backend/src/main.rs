@@ -15,8 +15,8 @@ async fn main() -> std::io::Result<()> {
     env_logger::init_from_env(Env::default().default_filter_or("debug"));
     run_migrations(&pg_conn).expect("Migrations should have been completed");
     let public_key = Key::generate();
-    let task_delay = time::interval(Duration::from_secs(20*60));
-    start_background_tasks(pg_conn.clone(),task_delay).await;
+    // let task_delay = time::interval(Duration::from_secs(20*60));
+    // start_background_tasks(pg_conn.clone(),task_delay).await;
     HttpServer::new(move || {
         App::new()
             .app_data(web::Data::new(pg_conn.clone()))
@@ -44,15 +44,11 @@ async fn main() -> std::io::Result<()> {
     .await
 }
 
-#[cfg(debug_assertions)]
+// #[cfg(debug_assertions)]
 fn get_cors() -> Cors {
-    Cors::permissive()
+    Cors::default().allowed_origin("http://127.0.0.1:3000/").supports_credentials()
 }
 
-#[cfg(not(debug_assertions))]
-fn get_cors() -> Cors {
-    Cors::default()
-}
 
 
 #[get("/")]
