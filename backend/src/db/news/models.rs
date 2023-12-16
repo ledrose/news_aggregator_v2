@@ -1,9 +1,10 @@
 use anyhow::anyhow;
+use chrono::Utc;
 use diesel::{Queryable, Selectable, associations::{Associations, Identifiable}, prelude::Insertable};
 use serde::{Serialize, Deserialize};
 
 
-#[derive(Selectable, Identifiable, Queryable, Associations,Debug,Serialize,Deserialize)]
+#[derive(Selectable, Identifiable, Queryable, Associations,Debug,Serialize,Deserialize,PartialEq)]
 #[diesel(table_name = crate::schema::news)]
 #[diesel(belongs_to(Source))]
 #[diesel(belongs_to(Theme))]
@@ -11,6 +12,7 @@ use serde::{Serialize, Deserialize};
 pub struct NewEntry {
     pub id: i32,
     pub header: String,
+    pub date_time: chrono::DateTime<Utc>,
     pub source_id: i32,
     pub theme_id: i32,
     pub text: String
@@ -79,6 +81,7 @@ impl<'a> From<(i32,&'a str)> for SourceThemeInsert<'a> {
 pub struct NewsFull {
     pub id: i32,
     pub header: String,
+    pub date_time: chrono::DateTime<Utc>,
     pub source: String,
     pub theme: String,
     pub text: String
@@ -87,6 +90,7 @@ pub struct NewsFull {
 #[derive(Debug,Serialize,Deserialize,PartialEq, Eq,Hash)]
 pub struct NewsInsert {
     pub header: String,
+    pub date_time: chrono::DateTime<Utc>,
     pub source_id: i32,
     pub theme_source: String,
     pub text: String
@@ -94,7 +98,7 @@ pub struct NewsInsert {
 
 impl<'a> From<(&'a NewsInsert,&'a SourceTheme)> for NewsDBInsert<'a> {
     fn from(value: (&'a NewsInsert,&'a SourceTheme)) -> Self {
-        Self { header: &value.0.header, source_id: value.0.source_id, theme_id: value.1.id, text: &value.0.text }
+        Self { header: &value.0.header, date_time: value.0.date_time, source_id: value.0.source_id, theme_id: value.1.id, text: &value.0.text }
     }
 }
 
@@ -103,6 +107,7 @@ impl<'a> From<(&'a NewsInsert,&'a SourceTheme)> for NewsDBInsert<'a> {
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct NewsDBInsert<'a> {
     pub header: &'a str,
+    pub date_time: chrono::DateTime<Utc>,
     pub source_id: i32,
     pub theme_id: i32,
     pub text: &'a str
@@ -115,6 +120,7 @@ impl TryFrom<(NewEntry,Option<Theme>,Option<Source>)> for NewsFull {
         Ok(NewsFull {
             id: value.0.id,
             header: value.0.header,
+            date_time: value.0.date_time,
             source: value.2.ok_or(anyhow!("Err1"))?.name, 
             theme: value.1.ok_or(anyhow!("Err2"))?.theme_name, 
             text: value.0.text 

@@ -4,6 +4,7 @@ diesel::table! {
     news (id) {
         id -> Int4,
         header -> Varchar,
+        date_time -> Timestamptz,
         source_id -> Int4,
         theme_id -> Int4,
         text -> Varchar,

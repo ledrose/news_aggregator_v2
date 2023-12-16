@@ -1,9 +1,9 @@
 use std::collections::HashSet;
 
-use anyhow::{anyhow, Ok};
-use diesel::{PgConnection, QueryDsl, RunQueryDsl, SelectableHelper, Insertable, insert_into, ExpressionMethods, BoolExpressionMethods};
+use anyhow::Ok;
+use diesel::{PgConnection, BelongingToDsl, QueryDsl, RunQueryDsl, SelectableHelper, insert_into, ExpressionMethods, BoolExpressionMethods, GroupedBy};
 use itertools::Itertools;
-use crate::{schema::{news, themes, sources, sourcethemes::{self, source_theme_name}}, error::{self, ApiError}};
+use crate::schema::{news, themes, sources, sourcethemes};
 
 use super::models::*;
 
@@ -23,23 +23,36 @@ pub fn get_news(max_id: i32, amount: i64, conn: &mut PgConnection) -> Vec<NewsFu
 }
 
 pub fn get_sources_by_type(type_val: &str, conn: &mut PgConnection) -> Result<Vec<Source>,anyhow::Error> {
-    let res = sources::table
+    let res: Vec<Source> = sources::table
         .filter(sources::source_type.eq(type_val))
         .select(Source::as_select())
         .load::<Source>(conn)?;
     Ok(res)
 }
 
+pub fn get_sources_and_last_entry_by_type(type_val: &str, conn: &mut PgConnection) -> Result<Vec<(Source,Option<NewEntry>)>,anyhow::Error> {
+    let sources: Vec<Source> = sources::table
+        .filter(sources::source_type.eq(type_val))
+        .select(Source::as_select())
+        .load::<Source>(conn)?;
+
+    let last_entries: Vec<NewEntry> = NewEntry::belonging_to(&sources)
+        .select(NewEntry::as_select())
+        .order_by((news::source_id.desc(),news::date_time.desc()))
+        .distinct_on(news::source_id)
+        .load::<NewEntry>(conn)?;
+    
+    let res = last_entries
+        .grouped_by(&sources)
+        .into_iter()
+        .zip(sources)
+        .map(|(news, source)| (source, news.into_iter().next()))
+        .collect::<Vec<(Source,Option<NewEntry>)>>();
+    Ok(res)
+}
+
 
 pub fn add_news_db(news_vec: Vec<NewsInsert>, conn: &mut PgConnection) -> Result<Vec<NewEntry>,anyhow::Error> {
-    // let source_names: HashSet<&str> = HashSet::from_iter(news_vec.iter().map(|x| x.source.as_str()));
-    // let sources = get_sources_with_def_insert(source_names, conn)?;
-    // println!("{sources:?}");
-    // This is very ineffective as it is basically O(n*m) instead of O(n). Can be changed to db call as all sources already created/
-    // let news_with_source = news_vec.iter()
-    //     .map(|x| (x,sources.iter().find_or_first(|y| x.source.as_str() == y.name)
-    //         .expect("sources already should be created and returned"))
-    //     ).unique().collect_vec();
     let source_theme_info = news_vec.iter()
         .map(|x| (x.source_id,x.theme_source.as_str())).collect_vec();
     let source_theme_info: HashSet<(i32, &str)> = HashSet::from_iter(source_theme_info);
@@ -58,24 +71,6 @@ pub fn add_news_db(news_vec: Vec<NewsInsert>, conn: &mut PgConnection) -> Result
         .returning(NewEntry::as_returning())
         .load::<NewEntry>(conn)?;
     Ok(res)
-}
-
-pub fn get_sources_with_def_insert<'a>(mut source_names: HashSet<&'a str>,conn: &mut PgConnection) -> anyhow::Result<Vec<Source>> {
-    let mut db_sources: Vec<Source> = sources::table
-        .filter(sources::name.eq_any(&source_names))
-        .select(Source::as_select())
-        .load::<Source>(conn)?;
-    let db_sources_set: HashSet<&str> = HashSet::from_iter(db_sources.iter().map(|x| x.name.as_str()));
-    source_names.retain(|x| !db_sources_set.contains(x));
-    let mut to_add: Vec<Source> = if !source_names.is_empty() {
-        let values: Vec<SourceInsert> = source_names.into_iter().map(|x| x.into()).collect_vec(); 
-        insert_into(sources::table)
-            .values(values)
-            .returning(Source::as_returning())
-            .load::<Source>(conn)?
-    } else {vec![]};
-    db_sources.append(&mut to_add);
-    Ok(db_sources)
 }
 
 pub fn get_source_themes_with_def_insert<'a>(mut source_theme_info: HashSet<(i32, &'a str)>,conn: &mut PgConnection) -> anyhow::Result<Vec<SourceTheme>> {
@@ -104,26 +99,12 @@ pub fn get_source_themes_with_def_insert<'a>(mut source_theme_info: HashSet<(i32
 
 
 
-
 #[cfg(test)]
 mod tests {
     use std::collections::HashSet;
-
-    use crate::db::{establish_connection, news::models::NewsInsert};
-
-    use super::{get_sources_with_def_insert, get_source_themes_with_def_insert, get_news, add_news_db};
-
-
-    #[test]
-    fn get_sources_id_with_def_insert_test() {
-        let mut conn = establish_connection().expect("db conn")
-            .get().expect("db conn 2");
-
-        let set: HashSet<&str> = HashSet::from_iter(vec!["RT","Idiot"]);
-        let res = get_sources_with_def_insert(set,&mut conn).expect("Error in get_sources");
-        // println!("{res:?}");
-
-    }
+    use crate::db::establish_connection;
+    use super::{get_source_themes_with_def_insert, get_news};
+    
     #[test]
     fn get_source_themes_with_def_insert_test() {
         let mut conn = establish_connection().expect("db conn")
@@ -132,18 +113,6 @@ mod tests {
         let res = get_source_themes_with_def_insert(set, &mut conn).expect("Error in get_source_themes");
         // println!("{res:?}");
     }
-    // #[test]
-    // fn insert_news() {
-    //     let mut conn = establish_connection().expect("db conn")
-    //         .get().expect("db conn 2");
-    //     let news_vec = vec![
-    //         NewsInsert { header: "lorum".to_owned(), source: "News Today".to_owned(), theme_source: "Sport".to_owned(), text: "lorum".to_owned() },
-    //         NewsInsert { header: "lorum".to_owned(), source: "RT".to_owned(), theme_source: "Politics".to_owned(), text: "lorum".to_owned() },
-    //         NewsInsert { header: "lorum".to_owned(), source: "RT".to_owned(), theme_source: "Sport".to_owned(), text: "lorum".to_owned() }
-    //     ];
-    //     let res = add_news_db(news_vec, &mut conn).expect("Everything should be fine!");
-    //     // println!("{res:?}");
-    // }
 
     #[test]
     fn get_news_test() {
@@ -153,4 +122,5 @@ mod tests {
         println!("{res:?}")
         // println!("{res:?}");
     }
+
 }

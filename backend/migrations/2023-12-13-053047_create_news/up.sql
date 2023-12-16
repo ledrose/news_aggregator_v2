@@ -22,6 +22,7 @@ CREATE TABLE sourceThemes (
 CREATE TABLE news (
     id SERIAL PRIMARY KEY,
     header VARCHAR NOT NULL,
+    date_time TIMESTAMPTZ NOT NULL,
     source_id INTEGER NOT NULL REFERENCES sources(id),
     theme_id INTEGER NOT NULL REFERENCES sourceThemes(id) DEFAULT 1,
     text VARCHAR NOT NULL

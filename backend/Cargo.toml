@@ -15,7 +15,7 @@ apalis = { version = "0.4.7", features = ["postgres"] }
 bcrypt = "0.15.0"
 chrono = "0.4.31"
 derive_more = "0.99.17"
-diesel = {version ="2.1.4", features=["postgres", "r2d2", "chrono", "postgres_backend"]}
+diesel = { version = "2.1.4", features = ["postgres", "r2d2", "chrono", "postgres_backend"] }
 diesel_migrations = { version = "2.1.0", features = ["postgres"] }
 dotenv = "0.15.0"
 env_logger = "0.10.1"
