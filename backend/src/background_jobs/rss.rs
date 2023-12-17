@@ -9,7 +9,8 @@ impl NewsInsert {
             header: value.title.clone().unwrap_or("Not title".to_string()),
             source_id, 
             theme_source: value.categories[0].name.clone(),
-            text: value.link.clone().unwrap_or("Has no link".to_string()),
+            link: value.link.clone().unwrap_or("Has no link".to_string()),
+            description: value.description.to_owned(),
             date_time: DateTime::parse_from_rfc2822(value.pub_date.as_ref()
                     .unwrap_or(&String::from("")).as_str()
                 ).unwrap_or_default().into(),
