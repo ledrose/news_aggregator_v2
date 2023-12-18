@@ -46,7 +46,8 @@ async fn main() -> std::io::Result<()> {
 
 // #[cfg(debug_assertions)]
 fn get_cors() -> Cors {
-    Cors::default().allowed_origin("http://127.0.0.1:3000/").supports_credentials()
+    Cors::permissive()
+    // Cors::default().allowed_origin("http://192.168.0.4:3000/").supports_credentials()
 }
 
 

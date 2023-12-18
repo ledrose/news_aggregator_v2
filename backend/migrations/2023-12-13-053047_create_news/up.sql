@@ -30,3 +30,4 @@ CREATE TABLE news (
 );
 
 INSERT INTO themes VALUES (1,'Другое');
+INSERT INTO sources VALUES (1,'Lenta','rss','https://lenta.ru/rss');
