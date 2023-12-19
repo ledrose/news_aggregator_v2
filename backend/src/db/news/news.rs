@@ -14,7 +14,7 @@ pub fn get_news(max_id: i32, amount: i64, conn: &mut PgConnection) -> Vec<NewsFu
         .left_join(sourcethemes::table.left_join(themes::table))
         .left_join(sources::table)
         .filter(news::id.le(max_id))
-        .order_by(news::id.desc())
+        .order_by(news::date_time.desc())
         .limit(amount)
         .select((NewEntry::as_select(),Option::<Theme>::as_select(),Option::<Source>::as_select()))
         .load::<(NewEntry,Option<Theme>,Option<Source>)>(conn)

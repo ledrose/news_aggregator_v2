@@ -26,6 +26,7 @@ pub fn add_user_inter(user_form: &UserRegister, conn: &mut PgConnection) -> Resu
     //     .filter(roles::name.eq(&user_form.role))
     //     .select(roles::id)
     //     .first(conn)?;
+    // println!("{user_form:?}");
     let ret = diesel::insert_into(users::table)
         .values((
             users::email.eq(&user_form.email),

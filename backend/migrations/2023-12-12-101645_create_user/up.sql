@@ -4,8 +4,8 @@ CREATE TABLE roles (
     name VARCHAR NOT NULL
 );
 
-INSERT INTO roles VALUES (1,'user');
-INSERT INTO roles VALUES (2,'admin');
+INSERT INTO roles VALUES (1,'User');
+INSERT INTO roles VALUES (2,'Admin');
 
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,

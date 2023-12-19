@@ -3,12 +3,17 @@ use diesel::prelude::*;
 use serde::{Serialize, Deserialize};
 
 
-#[derive(Queryable,Selectable,Debug,Serialize,Deserialize)]
+#[derive(Queryable,Selectable,Debug,Serialize,Deserialize,Clone)]
 #[diesel(table_name = crate::schema::roles)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Role {
     pub id: i32,
     pub name: String
+}
+#[derive(Debug,Serialize,Deserialize)]
+pub enum RoleEnum {
+    User,
+    Admin
 }
 
 #[derive(Queryable,Associations,Selectable,Debug,Serialize,Deserialize)]

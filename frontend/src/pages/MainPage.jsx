@@ -1,5 +1,6 @@
 import ErrorComponent from "../components/error_boundary";
 import fetch_news from "../components/backend_api/news";
+import NewsBlock from "../components/main_page/news_block";
 import { useQuery } from "react-query";
 
 export default function MainPage() {
@@ -17,9 +18,15 @@ function FetchComponent() {
     if (isError) {
         return <ErrorComponent error={error}/>
     }
-    console.log("Data:"+data);
     return <div>
-        {JSON.stringify(data)}
+        {data.map((el)=> 
+            <>   
+                <div>
+                    <NewsBlock news_info={el}/>
+                </div>
+                <hr></hr>
+            </>
+        )}
     </div>
 }
 

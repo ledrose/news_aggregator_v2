@@ -2,18 +2,14 @@ use actix_web::{Scope, Responder, web::{Data, Json, self}, post, HttpResponse};
 use anyhow::Error;
 use serde::{Serialize, Deserialize};
 
-use crate::{db::{DBPool, news::{news::{get_news, add_news_db}, models::NewsInsert}}, error};
+use crate::{db::{DBPool, news::{news::{get_news, add_news_db}, models::NewsInsert}}, error, api::models::NewsBatchInfo};
 
-#[derive(Serialize,Deserialize,Debug)]
-pub struct NewsBatchInfo {
-    max_id: i32,
-    amount: i64
-}
 
 pub fn news_scope() -> Scope {
     Scope::new("/news")
         .service(news)
         .service(add_news)
+        .default_service(web::route().to(HttpResponse::MethodNotAllowed))
 }
 
 #[post("/batch")]
