@@ -1,7 +1,5 @@
 use actix_session::SessionExt;
 use actix_web::{Scope, guard, web::{self, Data}, post, Responder, HttpResponse, get};
-use itertools::Itertools;
-use serde_json::json;
 
 use crate::{db::{user::user::get_all_users, DBPool}, error::ApiError};
 
@@ -27,7 +25,7 @@ pub async fn get_user_list(pool: Data<DBPool>) -> actix_web::Result<impl Respond
         let mut conn = pool.get()?;
         get_all_users(&mut conn)
     }).await?
-        .map_err(|_| ApiError::LoginError)?;
+        .map_err(|_| ApiError::InternalError)?;
     let user_answer: Vec<UserAnswer> = user_list.into_iter().map(|x| x.into()).collect();
     Ok(HttpResponse::Ok().json(user_answer))
 }

@@ -1,10 +1,11 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 use crate::db::user::models::{User, Role};
 
 #[derive(Serialize,Deserialize,Debug)]
 pub struct NewsBatchInfo {
-    pub max_id: i32,
+    pub start_date: Option<DateTime<Utc>>,
     pub amount: i64
 }
 

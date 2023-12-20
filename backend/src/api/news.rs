@@ -16,7 +16,7 @@ pub fn news_scope() -> Scope {
 pub async fn news(pool: Data<DBPool>,news_batch: Json<NewsBatchInfo>) -> actix_web::Result<impl Responder> {
     let res = web::block(move || {
         let mut conn = pool.get()?;
-        Ok(get_news(news_batch.max_id, news_batch.amount, &mut conn))
+        Ok(get_news(news_batch.start_date, news_batch.amount, &mut conn))
     }).await?
     .map_err(|_: Error| error::ApiError::InternalError)?;
     log::debug!("{res:?}");

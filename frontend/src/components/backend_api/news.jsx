@@ -9,7 +9,7 @@ export default async function fetch_news(max_id, amount) {
             "Content-type": "application/json"
         },
         body: JSON.stringify({
-            "max_id": max_id,
+            "start_date": max_id,
             "amount": amount,
         })
     }).then((x) => x.json());

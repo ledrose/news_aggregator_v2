@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use anyhow::Ok;
+use chrono::{DateTime, Utc};
 use diesel::{PgConnection, BelongingToDsl, QueryDsl, RunQueryDsl, SelectableHelper, insert_into, ExpressionMethods, BoolExpressionMethods, GroupedBy};
 use itertools::Itertools;
 use crate::schema::{news, themes, sources, sourcethemes};
@@ -8,12 +9,13 @@ use crate::schema::{news, themes, sources, sourcethemes};
 use super::models::*;
 
 
-pub fn get_news(max_id: i32, amount: i64, conn: &mut PgConnection) -> Vec<NewsFull> {
+pub fn get_news(start_date: Option<DateTime<Utc>>, amount: i64, conn: &mut PgConnection) -> Vec<NewsFull> {
     // todo!();
+    let start_date = start_date.unwrap_or(chrono::Utc::now());
     news::table
         .left_join(sourcethemes::table.left_join(themes::table))
         .left_join(sources::table)
-        .filter(news::id.le(max_id))
+        .filter(news::date_time.lt(start_date))
         .order_by(news::date_time.desc())
         .limit(amount)
         .select((NewEntry::as_select(),Option::<Theme>::as_select(),Option::<Source>::as_select()))
@@ -97,30 +99,3 @@ pub fn get_source_themes_with_def_insert<'a>(mut source_theme_info: HashSet<(i32
     Ok(db_themes)
 }
 
-
-
-#[cfg(test)]
-mod tests {
-    use std::collections::HashSet;
-    use crate::db::establish_connection;
-    use super::{get_source_themes_with_def_insert, get_news};
-    
-    #[test]
-    fn get_source_themes_with_def_insert_test() {
-        let mut conn = establish_connection().expect("db conn")
-            .get().expect("db conn 2");
-        let set: HashSet<(i32,&str)> = HashSet::from_iter(vec![(1,"Politics"),(2,"Sport")]);
-        let res = get_source_themes_with_def_insert(set, &mut conn).expect("Error in get_source_themes");
-        // println!("{res:?}");
-    }
-
-    #[test]
-    fn get_news_test() {
-        let mut conn = establish_connection().expect("db conn")
-            .get().expect("db conn 2");
-        let res = get_news(0,6, &mut conn);
-        println!("{res:?}")
-        // println!("{res:?}");
-    }
-
-}

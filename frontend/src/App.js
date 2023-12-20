@@ -5,6 +5,7 @@ import MainPage from './pages/MainPage';
 import {Route, Routes} from 'react-router-dom';
 import {QueryClientProvider, QueryClient } from 'react-query'
 import LoginPage from './pages/LoginPage';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const queryClient = new QueryClient();
 
