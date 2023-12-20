@@ -4,14 +4,8 @@ import NewsBlock from "../components/main_page/news_block";
 import { useQuery } from "react-query";
 import { useEffect, useState } from "react";
 
-export default function MainPage() {
-    return (
-        <FetchComponent/>
-    )
-    
-}
 
-function FetchComponent() {
+export default function MainPage() {
     const [data,setData] = useState([]);
     const [dateOffset,setDateOffset] = useState(undefined);
     const [load,setLoad] = useState(false);

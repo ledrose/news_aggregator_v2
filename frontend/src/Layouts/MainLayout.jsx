@@ -1,10 +1,10 @@
 import { Outlet } from "react-router-dom";
-import NavBar from "../components/navigation/Header/NavBar";
+import NavBar from "../components/navigation/NavBar/NavBar";
 
-export default function MainLayout() {
+export default function MainLayout({userState}) {
     return (
         <div>
-            <NavBar/>
+            <NavBar userState={userState}/>
             <Outlet/>
         </div>
     )

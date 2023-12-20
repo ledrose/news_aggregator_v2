@@ -1,5 +1,5 @@
 export async function login_api(email,password) {
-    console.log(email,password);
+    // console.log(email,password);
     return fetch(process.env.REACT_APP_API_URL+"auth/login", {
         method: "POST",
         credentials: "include",
@@ -11,22 +11,13 @@ export async function login_api(email,password) {
             "email": email,
             "password": password,
         })
-    }).then((res)=> res.status);
+    }).then((res)=> res.json());
 }
 
-export async function check_login() {
-    return fetch(process.env.REACT_APP_API_URL+"admin/users", {
-        method: "POST",
+export async function logout_api() {
+    return fetch(process.env.REACT_APP_API_URL+"auth/logout", {
+        method: "GET",
         credentials: "include",
         mode: "cors"
-    }).then((res)=> res.statusText);
-}
-
-export async function register_api(register_form_data) {
-    return fetch(process.env.REACT_APP_API_URL+"auth/register", {
-        method: "POST",
-        credentials: "include",
-        mode: "cors",
-        data: register_form_data
-    }).then((x) => x.json());
+    }).then((res)=> res.ok);
 }
