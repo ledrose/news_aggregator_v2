@@ -1,6 +1,11 @@
 use actix_session::SessionExt;
-use actix_web::{Scope, guard, web, post, Responder, HttpResponse};
+use actix_web::{Scope, guard, web::{self, Data}, post, Responder, HttpResponse, get};
+use itertools::Itertools;
 use serde_json::json;
+
+use crate::{db::{user::user::get_all_users, DBPool}, error::ApiError};
+
+use super::models::UserAnswer;
 
 
 pub fn admin_scope() -> Scope {
@@ -16,7 +21,13 @@ pub fn admin_scope() -> Scope {
         .service(get_user_list)
 }
 
-#[post("/users")]
-async fn get_user_list() -> impl Responder {
-    HttpResponse::Ok().json(json!({"answer":"You are logged"}))
+#[get("/users")]
+pub async fn get_user_list(pool: Data<DBPool>) -> actix_web::Result<impl Responder> {
+    let user_list = web::block(move || {
+        let mut conn = pool.get()?;
+        get_all_users(&mut conn)
+    }).await?
+        .map_err(|_| ApiError::LoginError)?;
+    let user_answer: Vec<UserAnswer> = user_list.into_iter().map(|x| x.into()).collect();
+    Ok(HttpResponse::Ok().json(user_answer))
 }

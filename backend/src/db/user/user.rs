@@ -21,12 +21,6 @@ pub fn auth_inter(user_form: &UserForm, conn: &mut PgConnection) -> Result<UserW
 }
 
 pub fn add_user_inter(user_form: &UserRegister, conn: &mut PgConnection) -> Result<User> {
-    // use crate::schema::users::dsl::*;
-    // let query_role_id: i32 = roles::table
-    //     .filter(roles::name.eq(&user_form.role))
-    //     .select(roles::id)
-    //     .first(conn)?;
-    // println!("{user_form:?}");
     let ret = diesel::insert_into(users::table)
         .values((
             users::email.eq(&user_form.email),
@@ -36,6 +30,14 @@ pub fn add_user_inter(user_form: &UserRegister, conn: &mut PgConnection) -> Resu
         .returning(User::as_returning())
         .get_result(conn)?;
     Ok(ret)
+}
+
+pub fn get_all_users(conn: &mut PgConnection) -> Result<Vec<(User,Role)>> {
+    let res = users::table
+        .inner_join(roles::table)
+        .select((User::as_select(), Role::as_select()))
+        .get_results::<(User,Role)>(conn)?;
+    Ok(res)
 }
 
 pub fn get_role_db(email: &str, conn: &mut PgConnection) -> Result<Role> {
