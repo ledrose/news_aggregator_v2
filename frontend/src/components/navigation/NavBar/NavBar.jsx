@@ -2,6 +2,7 @@ import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
 import { logout_api } from '../../backend_api/login';
 import usePersistentState from '../../../_helpers/UsePersistent';
+import useCustomFetch from '../../../_helpers/CustomFetchHook';
 
 export default function NavBar({userState}) {
     return (
@@ -16,10 +17,11 @@ export default function NavBar({userState}) {
 
 function SelectInfo({userState}) {
     const [username,setUsername] = userState;    
-    const logout = () => {logout_api().then((e) => setUsername(""))};
-    console.log(username);
-    const is_logged = (username!="")?true:false;
-    if (is_logged) {
+    const [isLoading,data,err,sendRequest] = useCustomFetch(logout_api,(data)=>{setUsername("")});
+    const logout = () => {sendRequest()};
+    // console.log(username);
+    // const is_logged = (username!="")?true:false;
+    if (username!=="") {
         return <div>
             <p>Current_user: {username}</p>
             <button onClick={logout}>Logout</button>

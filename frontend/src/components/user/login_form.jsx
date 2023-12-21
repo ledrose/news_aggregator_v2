@@ -3,13 +3,14 @@ import {check_login, login_api} from "../backend_api/login"
 import usePersistentState from "../../_helpers/UsePersistent";
 import { redirect, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import useCustomFetch from "../../_helpers/CustomFetchHook";
 export default function LoginForm({userState}) {
+    const onSubmit = (data) => sendRequest(data.email,data.password);
     const {register, handleSubmit} = useForm();
     const navigate = useNavigate();
-    const [logged,setLogged] = useState();
     const [username,setUsername] = userState;
-    const onSubmit = (data) => login_api(data.email,data.password).then((j) => {
-        setUsername(j.email);
+    const [isLoading,data,err,sendRequest] = useCustomFetch(login_api,(data)=>{
+        setUsername(data.email);
         navigate("/");
     });
     return <>
@@ -18,6 +19,15 @@ export default function LoginForm({userState}) {
             <input htmlFor="password" type="password" {...register("password",{required:true})}/>
             <input type="submit"></input>
         </form>
+        { isLoading===true &&
+            <div>Loading</div>
+        }
+        { err!==null &&
+            <div>Error</div>
+        }
+        { data!==null &&
+            <div>{JSON.stringify(data)}</div>
+        }
         {/* <button onClick={onRolePress}>GetRole</button> */}
     </>
 }

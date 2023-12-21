@@ -43,7 +43,7 @@ pub async fn login(pool: Data<DBPool>,user: Json<UserForm>,session: Session) -> 
 #[get("/logout")]
 pub async fn logout(session: Session) -> actix_web::Result<impl Responder> {
     session.renew();
-    Ok(HttpResponse::Ok())
+    Ok(HttpResponse::Ok().json(json!({"answer":"ok"})))
 }
 
 // #[post("/role")]
