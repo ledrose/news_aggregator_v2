@@ -1,11 +1,11 @@
 import request from "../../_helpers/FetchHelper";
 
 
-export default async function fetch_news(max_id, amount,prefs) {
+export default async function fetch_news(maxId, amount,searchQuery) {
     return request("news/batch","POST",{
-        "start_date": max_id,
+        "start_date": maxId,
         "amount": amount,
-        "prefs": prefs
+        "prefs": searchQuery
     });
 }
 

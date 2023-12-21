@@ -3,7 +3,7 @@ import {check_login, login_api} from "../backend_api/login"
 import usePersistentState from "../../_helpers/UsePersistent";
 import { redirect, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import {Button, Form} from "react-bootstrap";
+import {Button, Form, Spinner} from "react-bootstrap";
 import useCustomFetch from "../../_helpers/CustomFetchHook";
 export default function LoginForm({userState}) {
     const navigate = useNavigate();
@@ -17,7 +17,7 @@ export default function LoginForm({userState}) {
         e.preventDefault();
         sendRequest(target.email.value,target.password.value)
     }
-        // sendRequest(data.email,data.password);
+
     return <>
         <Form onSubmit={onSubmit}>
             <Form.Group className="mb-3" controlId="formEmail">
