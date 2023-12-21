@@ -3,31 +3,46 @@ import {check_login, login_api} from "../backend_api/login"
 import usePersistentState from "../../_helpers/UsePersistent";
 import { redirect, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import {Button, Form} from "react-bootstrap";
 import useCustomFetch from "../../_helpers/CustomFetchHook";
 export default function LoginForm({userState}) {
-    const onSubmit = (data) => sendRequest(data.email,data.password);
-    const {register, handleSubmit} = useForm();
     const navigate = useNavigate();
     const [username,setUsername] = userState;
     const [isLoading,data,err,sendRequest] = useCustomFetch(login_api,(data)=>{
         setUsername(data.email);
         navigate("/");
     });
+    const onSubmit = (e) => {
+        const target = e.target
+        e.preventDefault();
+        sendRequest(target.email.value,target.password.value)
+    }
+        // sendRequest(data.email,data.password);
     return <>
-        <form onSubmit={handleSubmit(onSubmit)}>
-            <input type="email" {...register("email", {required: true})}/>
-            <input htmlFor="password" type="password" {...register("password",{required:true})}/>
-            <input type="submit"></input>
-        </form>
+        <Form onSubmit={onSubmit}>
+            <Form.Group className="mb-3" controlId="formEmail">
+                <Form.Label>Email address</Form.Label>
+                <Form.Control name="email" type="email" placeholder="Enter email"></Form.Control>
+                <Form.Text className="text-muted">
+                    Please, enter email.
+                </Form.Text>
+            </Form.Group>
+            <Form.Group className="mb-3" controlId="formPassword">
+                <Form.Label>Password</Form.Label>
+                <Form.Control name="password" type="password" placeholder="Password"></Form.Control>
+            </Form.Group>
+            <Button variant="primary" type="submit">
+                Submit
+            </Button>
+        </Form>
         { isLoading===true &&
             <div>Loading</div>
         }
         { err!==null &&
-            <div>Error</div>
+            <div>{err.toString()}</div>
         }
         { data!==null &&
             <div>{JSON.stringify(data)}</div>
         }
-        {/* <button onClick={onRolePress}>GetRole</button> */}
     </>
 }

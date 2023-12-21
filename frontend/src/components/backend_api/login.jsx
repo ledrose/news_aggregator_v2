@@ -11,9 +11,4 @@ export async function login_api(email,password) {
 
 export async function logout_api() {
     return request("auth/logout","GET");
-    // return fetch(process.env.REACT_APP_API_URL+"auth/logout", {
-    //     method: "GET",
-    //     credentials: "include",
-    //     mode: "cors"
-    // }).then((res)=> res.ok);
 }
