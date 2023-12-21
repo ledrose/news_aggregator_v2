@@ -3,32 +3,32 @@ import fetch_news from "../components/backend_api/news";
 import NewsBlock from "../components/main_page/news_block";
 import { useQuery } from "react-query";
 import { useEffect, useState } from "react";
+import useCustomFetch from "../_helpers/CustomFetchHook";
 
+
+const prefs = [
+    {
+        action: "Remove",
+        pref_type: {
+            type:"Theme",
+            name:"Другое"
+        }
+    }
+]
 
 export default function MainPage() {
     const [data,setData] = useState([]);
     const [dateOffset,setDateOffset] = useState(undefined);
+    const [isLoading, resp ,error, sendRequest] = useCustomFetch(fetch_news,
+        (newData) => {
+            setData([
+                ...data,
+                ...newData
+            ]);
+            setDateOffset(newData[newData.length-1].date_time);
+        }
+    );
     const [load,setLoad] = useState(false);
-    // console.log(dateOffset);
-    useEffect(()=>{
-        setLoad(false);
-        fetch_news(dateOffset,15).then(
-            (newData) => {
-                setData([
-                    ...data,
-                    ...newData
-                ]);
-                setDateOffset(newData[newData.length-1].date_time);
-            }
-        )
-    },[load]);
-    // const {isLoading, isError, data, error} = useQuery('news_batch',() => fetch_news(15,10));
-    // if (isLoading) {
-    //     return <LoadingPage/>
-    // }
-    // if (isError) {
-    //     return <ErrorComponent error={error}/>
-    // }
     return <div>
         {data.length>0 && data?.map((el)=> 
             <div key={el.id}>   
@@ -36,7 +36,7 @@ export default function MainPage() {
                 <hr></hr>
             </div>
         )}
-        <button onClick={()=>setLoad(true)}>Load more</button>
+        <button onClick={()=>sendRequest(dateOffset,15,prefs)}>Load more</button>
     </div>
 }
 

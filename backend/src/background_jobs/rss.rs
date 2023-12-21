@@ -1,7 +1,7 @@
 use anyhow::Ok;
 use chrono::DateTime;
 use rss::Channel;
-use crate::db::news::{news::{get_sources_and_last_entry_by_type, add_news_db, get_sources_by_type}, models::{Source, NewsInsert, NewEntry}};
+use crate::db::news::{news::{get_sources_and_last_entry_by_type, add_news_db}, models::{Source, NewsInsert, NewEntry}};
 
 impl NewsInsert {
     pub fn from_rss_item(value: &rss::Item, source_id: i32) -> NewsInsert {

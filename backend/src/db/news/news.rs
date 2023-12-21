@@ -2,19 +2,37 @@ use std::collections::HashSet;
 
 use anyhow::Ok;
 use chrono::{DateTime, Utc};
-use diesel::{PgConnection, BelongingToDsl, QueryDsl, RunQueryDsl, SelectableHelper, insert_into, ExpressionMethods, BoolExpressionMethods, GroupedBy};
+use diesel::{dsl::not,PgConnection, BelongingToDsl, QueryDsl, RunQueryDsl, SelectableHelper, insert_into, ExpressionMethods, BoolExpressionMethods, GroupedBy};
 use itertools::Itertools;
-use crate::schema::{news, themes, sources, sourcethemes};
+use crate::{schema::{news, themes, sources, sourcethemes}, api::models::{Preferences, PreferenceType, PreferenceAction}};
 
 use super::models::*;
 
 
-pub fn get_news(start_date: Option<DateTime<Utc>>, amount: i64, conn: &mut PgConnection) -> Vec<NewsFull> {
+pub fn get_news(start_date: Option<DateTime<Utc>>, amount: i64, prefs: Vec<Preferences>, conn: &mut PgConnection) -> Vec<NewsFull> {
     // todo!();
     let start_date = start_date.unwrap_or(chrono::Utc::now());
-    news::table
+    let mut query = news::table
         .left_join(sourcethemes::table.left_join(themes::table))
         .left_join(sources::table)
+        .into_boxed();
+    for pref in prefs {
+        query = match pref.pref_type {
+                PreferenceType::Source { name } => {
+                    match &pref.action {
+                        PreferenceAction::Add => {query.or_filter(sources::name.eq(name))}
+                        PreferenceAction::Remove => {query.filter(sources::name.ne(name))},
+                    }
+                },
+                PreferenceType::Theme { name } => {
+                    match &pref.action {
+                        PreferenceAction::Add => {query.or_filter(themes::theme_name.eq(name))}
+                        PreferenceAction::Remove => {query.filter(themes::theme_name.ne(name))},
+                    }
+                }
+        };
+    }
+    query
         .filter(news::date_time.lt(start_date))
         .order_by(news::date_time.desc())
         .limit(amount)
