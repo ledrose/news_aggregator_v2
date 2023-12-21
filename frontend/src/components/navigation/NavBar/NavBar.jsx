@@ -21,10 +21,7 @@ export default function NavBar({userState}) {
 
 function SelectInfo({userState}) {
     const [username,setUsername] = userState;    
-    const [isLoading,data,err,sendRequest] = useCustomFetch(logout_api,(data)=>{setUsername("")});
-    const logout = () => {sendRequest()};
-    // console.log(username);
-    // const is_logged = (username!="")?true:false;
+    const [isLoading,data,err,logout] = useCustomFetch(logout_api,(data)=>{setUsername("")});
     if (username!=="") {
         return <>
             <Navbar.Text className='m-1'>
@@ -34,10 +31,6 @@ function SelectInfo({userState}) {
                 Logout
             </Button>
         </>
-        // return <div>
-        //     <p>Current_user: {username}</p>
-        //     <button onClick={logout}>Logout</button>
-        // </div>
     }
     return <>
         <Nav.Link href='/login'>Login</Nav.Link>

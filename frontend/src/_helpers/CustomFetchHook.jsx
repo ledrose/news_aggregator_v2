@@ -14,7 +14,7 @@ export default function useCustomFetch(promise,onData=(json)=>{},onErr=(err)=>{}
     const sendRequest = (...args) => {
         setRespState(fetchState(true,null,null));
         promise(...args).then((response) => {
-            console.log(response);
+            // console.log(response);
             if (response.ok) {
                 const resp = response.text().then((text)=> {
                     const data = text && JSON.parse(text);
@@ -24,6 +24,7 @@ export default function useCustomFetch(promise,onData=(json)=>{},onErr=(err)=>{}
                         onErr(err);
                     } else {
                         setRespState(fetchState(false,data,null));
+                        console.log(data);
                         onData(data);
                     }
                 });
