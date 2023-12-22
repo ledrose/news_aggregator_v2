@@ -21,11 +21,6 @@ export default function MainPage() {
     const [loadNext,setLoadNext] = useState(true);
     const [query,dispatchQuery] = useReducer(reducer,defaultQuery);
     const [dateOffset,setDateOffset] = useState(undefined);
-    const reset = () => {
-        setData([]);
-        setLoadNext(true);
-        setDateOffset(undefined);
-    }
     const [isLoading, resp ,error, sendRequest] = useCustomFetch(fetch_news,
         (newData) => {
             setData([
@@ -39,6 +34,12 @@ export default function MainPage() {
             }
         }
     );
+    const reset = () => {
+        setData([]);
+        setLoadNext(true);
+        setDateOffset(undefined);
+        // sendRequest(undefined,load_at_once,query);
+    }
     const load = () => sendRequest(dateOffset,load_at_once,query); 
     return <div>
         <QueryBlock dispatchQuery={dispatchQuery} reset={reset}/>

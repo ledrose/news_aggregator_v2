@@ -12,7 +12,7 @@ export const errorState = createSlice({
             state.error = action.payload;
         },
         reset: (state) => {
-            state.error = 0;
+            state.error = null;
         }
     }
 })

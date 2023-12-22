@@ -76,7 +76,7 @@ export function QueryBlock({dispatchQuery,reset}) {
                     <CustomFormCheck key={i} id={i} label={el} apply={apply} type="theme"/>
                 ))}
             </div>
-            <Button variant="primary" type="Submit"></Button>
+            <Button variant="primary" type="Submit">Apply stats</Button>
         </Form>
 }
 

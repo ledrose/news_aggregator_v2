@@ -23,7 +23,7 @@ export default function useCustomFetch(promise,onData=(json)=>{},onErr=(err)=>{}
     }
     const sendRequest = (...args) => {
         setRespState(fetchState(true,null,null));
-        promise(...args) .then((response) => {
+        promise(...args).then((response) => {
             if (response.ok) {
                 const resp = response.text().then((text)=> {
                     const data = text && JSON.parse(text);
@@ -39,8 +39,9 @@ export default function useCustomFetch(promise,onData=(json)=>{},onErr=(err)=>{}
                 console.log("Ok: "+resp);
             }
             else {
-                const err = response.status_text;
-                errAction(err);
+                response.text().then((err)=> {
+                    errAction(err)
+                })
             }
         },(err) => {
             errAction(err);

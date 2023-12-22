@@ -9,12 +9,11 @@ import usePersistentState from './_helpers/UsePersistent';
 import ThemesPage from './pages/ThemesPage';
 
 function App() {
-  const userState = usePersistentState("username",null);
   return (
       <Routes>
-        <Route exact path='/' element={<MainLayout userState={userState}/>}>
+        <Route exact path='/' element={<MainLayout/>}>
           <Route index element={<MainPage/>}/>
-*         <Route path='/login' element={<LoginPage userState={userState}/>}></Route>
+*         <Route path='/login' element={<LoginPage/>}></Route>
           <Route path='/themes' element={<ThemesPage/>}></Route>
         </Route>
       </Routes>

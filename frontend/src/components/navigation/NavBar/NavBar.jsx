@@ -4,7 +4,9 @@ import { Button, Nav, NavDropdown } from 'react-bootstrap';
 import { logout_api } from '../../backend_api/login';
 import usePersistentState from '../../../_helpers/UsePersistent';
 import useCustomFetch from '../../../_helpers/CustomFetchHook';
-export default function NavBar(props) {
+import { useSelector } from 'react-redux';
+import { reset, setUser } from '../../../_store/userSlice';
+export default function NavBar() {
     return (
         <Navbar expand="lg" bg='primary' className='bg-body-tetiary'>
             <Container fluid>
@@ -13,7 +15,7 @@ export default function NavBar(props) {
                     {/* <InfoPopover></InfoPopover> */}
                 </Navbar.Text>
                 <Navbar.Collapse id='navbar-colapse-login' className='justify-content-end'>
-                    <SelectInfo {...props}></SelectInfo>
+                    <SelectInfo></SelectInfo>
                 </Navbar.Collapse>
                 {/* <Navbar.Brand href='/login'>I am home</Navbar.Brand> */}
             </Container>
@@ -21,13 +23,14 @@ export default function NavBar(props) {
     );
 }
 
-function SelectInfo({userState}) {
-    const [username,setUsername] = userState; 
-    const [isLoading,data,err,logout] = useCustomFetch(logout_api,(data)=>{setUsername(null)});
-    if (username!==null) {
+function SelectInfo() {
+    const userInfo = useSelector((state) => state.user);
+
+    const [isLoading,data,err,logout] = useCustomFetch(logout_api,(data)=>{reset()});
+    if (userInfo.email!==null) {
         return <>
             <Navbar.Text className='m-1'>
-                Logged as: {username}
+                Logged as: {userInfo.email}
             </Navbar.Text>
             <Button variant='secondary' onClick={logout}>
                 Logout
