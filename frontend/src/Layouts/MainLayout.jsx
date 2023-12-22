@@ -5,7 +5,7 @@ import InfoPopover from "../components/navigation/InfoPopover/InfoPopover";
 export default function MainLayout(props) {
     return (
         <div>
-            <InfoPopover errorState={props.errorState} />
+            <InfoPopover/>
             <NavBar {...props}/>
             <Outlet/>
         </div>

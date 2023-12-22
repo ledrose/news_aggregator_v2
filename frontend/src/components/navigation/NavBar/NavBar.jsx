@@ -21,10 +21,9 @@ export default function NavBar(props) {
     );
 }
 
-function SelectInfo({userState, errorState}) {
+function SelectInfo({userState}) {
     const [username,setUsername] = userState; 
-    const [errorGlobal,setErrorGlobal] = errorState;
-    const [isLoading,data,err,logout] = useCustomFetch(logout_api,(data)=>{setUsername(null)},(err)=>{setErrorGlobal(err)});
+    const [isLoading,data,err,logout] = useCustomFetch(logout_api,(data)=>{setUsername(null)});
     if (username!==null) {
         return <>
             <Navbar.Text className='m-1'>

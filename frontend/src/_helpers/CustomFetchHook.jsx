@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setError } from "../_store/errorSlice";
 
 
 function fetchState(isLoading,data,err) {
@@ -8,21 +10,26 @@ function fetchState(isLoading,data,err) {
         err:err
     }
 }
+
+
 //isLoading,data,error
 export default function useCustomFetch(promise,onData=(json)=>{},onErr=(err)=>{}) {
     const [respState,setRespState] = useState(fetchState(false,null,null));
+    const dispatch = useDispatch();
+    const errAction = (err) => {
+        setRespState(fetchState(false,null,err));
+        onErr(err);
+        dispatch(setError(err.toString()));
+    }
     const sendRequest = (...args) => {
         setRespState(fetchState(true,null,null));
         promise(...args) .then((response) => {
-            console.log(response);
-            // console.log(response);
             if (response.ok) {
                 const resp = response.text().then((text)=> {
                     const data = text && JSON.parse(text);
                     if (data === "") {
                         const err = (data && data.message) || response.status_text;
-                        setRespState(fetchState(false,null,err));
-                        onErr(err);
+                        errAction(err);
                     } else {
                         setRespState(fetchState(false,data,null));
                         console.log(data);
@@ -33,13 +40,10 @@ export default function useCustomFetch(promise,onData=(json)=>{},onErr=(err)=>{}
             }
             else {
                 const err = response.status_text;
-                setRespState(fetchState(false,null,err));
-                onErr(err);
+                errAction(err);
             }
         },(err) => {
-            console.log(err);
-            setRespState(fetchState(false,null,err));
-            onErr(err);
+            errAction(err);
         });
     };
     return [respState.isLoading,respState.data,respState.err,sendRequest];

@@ -5,14 +5,13 @@ import { redirect, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import {Button, Form, Spinner} from "react-bootstrap";
 import useCustomFetch from "../../_helpers/CustomFetchHook";
-export default function LoginForm({userState,errorState}) {
+export default function LoginForm({userState}) {
     const navigate = useNavigate();
     const [username,setUsername] = userState;
-    const [errorGlobal,setErrorGlobal] = errorState;
     const [isLoading,data,err,sendRequest] = useCustomFetch(login_api,(data)=>{
         setUsername(data.email);
         navigate("/");
-    },(err)=>setErrorGlobal(err));
+    });
     const onSubmit = (e) => {
         const target = e.target
         e.preventDefault();
