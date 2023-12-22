@@ -10,13 +10,14 @@ import usePersistentState from './_helpers/UsePersistent';
 const queryClient = new QueryClient();
 
 function App() {
-  const userState = usePersistentState("username","");
+  const userState = usePersistentState("username",null);
+  const errorState = usePersistentState("error",null);
   return (
     <QueryClientProvider client={queryClient}>
       <Routes>
-        <Route exact path='/' element={<MainLayout userState={userState}/>}>
-          <Route index element={<MainPage/>}/>
-*         <Route path='/login' element={<LoginPage userState={userState}/>}></Route>
+        <Route exact path='/' element={<MainLayout userState={userState} errorState={errorState}/>}>
+          <Route index element={<MainPage errorState={errorState}/>}/>
+*         <Route path='/login' element={<LoginPage userState={userState} errorState={errorState}/>}></Route>
         </Route>
       </Routes>
     </QueryClientProvider>

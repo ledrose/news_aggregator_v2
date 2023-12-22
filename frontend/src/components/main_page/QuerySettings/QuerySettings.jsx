@@ -17,7 +17,7 @@ function removeItem(arr,value) {
     return arr
 }
 
-export function reducer(current,action) {
+export  function reducer(current,action) {
     switch (action.type) {
         case 'query': 
             return {...current,query:action.value};

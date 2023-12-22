@@ -15,12 +15,13 @@ const defaultQuery = {
 }
 
 
-export default function MainPage() {
+export default function MainPage({errorState}) {
     const load_at_once = 15
     const [data,setData] = useState([]);
-    const [loadNext,setLoadNext] = useState(true)
+    const [loadNext,setLoadNext] = useState(true);
     const [query,dispatchQuery] = useReducer(reducer,defaultQuery);
     const [dateOffset,setDateOffset] = useState(undefined);
+    const [globalError,setGlobalError] = errorState;
     const reset = () => {
         setData([]);
         loadNext(true);
@@ -38,7 +39,7 @@ export default function MainPage() {
             } else {
                 setDateOffset(newData[newData.length-1].date_time);
             }
-        }
+        }, (err) => {setGlobalError(err);}
     );
     const load = () => sendRequest(dateOffset,load_at_once,query); 
     return <div>

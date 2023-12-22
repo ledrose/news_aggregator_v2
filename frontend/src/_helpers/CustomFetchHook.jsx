@@ -13,7 +13,8 @@ export default function useCustomFetch(promise,onData=(json)=>{},onErr=(err)=>{}
     const [respState,setRespState] = useState(fetchState(false,null,null));
     const sendRequest = (...args) => {
         setRespState(fetchState(true,null,null));
-        promise(...args).then((response) => {
+        promise(...args) .then((response) => {
+            console.log(response);
             // console.log(response);
             if (response.ok) {
                 const resp = response.text().then((text)=> {
@@ -36,6 +37,7 @@ export default function useCustomFetch(promise,onData=(json)=>{},onErr=(err)=>{}
                 onErr(err);
             }
         },(err) => {
+            console.log(err);
             setRespState(fetchState(false,null,err));
             onErr(err);
         });

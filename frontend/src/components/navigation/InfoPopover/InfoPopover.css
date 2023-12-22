@@ -1,0 +1,14 @@
+.popup-error {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 80% !important
+}
+
+.popup-error-closed {
+    position: absolute;
+    display: none;
+    top: 0;
+    right: 0;
+    left: 40% !important
+}

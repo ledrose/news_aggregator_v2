@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react"
 
 export default function usePersistentState(key,defaultValue) {
-    const [state,setState] = useState(() => localStorage.getItem(key) || defaultValue);
+    const [state,setState] = useState(() => JSON.parse(localStorage.getItem(key)) || defaultValue);
     useEffect(()=>{
-        localStorage.setItem(key,state);
+        localStorage.setItem(key,JSON.stringify(state));
     },[key,state]);
     return [state,setState];
 }
