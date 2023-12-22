@@ -24,9 +24,8 @@ export default function MainPage({errorState}) {
     const [globalError,setGlobalError] = errorState;
     const reset = () => {
         setData([]);
-        loadNext(true);
+        setLoadNext(true);
         setDateOffset(undefined);
-
     }
     const [isLoading, resp ,error, sendRequest] = useCustomFetch(fetch_news,
         (newData) => {
@@ -43,7 +42,7 @@ export default function MainPage({errorState}) {
     );
     const load = () => sendRequest(dateOffset,load_at_once,query); 
     return <div>
-        <QueryBlock dispatchQuery={dispatchQuery}/>
+        <QueryBlock dispatchQuery={dispatchQuery} reset={reset}/>
         {data.length>0 && data?.map((el)=> 
             <div key={el.id}>   
                 <NewsBlock news_info={el}/>

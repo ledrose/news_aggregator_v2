@@ -45,7 +45,7 @@ export  function reducer(current,action) {
     return current
 }
 
-export function QueryBlock({dispatchQuery}) {
+export function QueryBlock({dispatchQuery,reset}) {
     const sources = ["Lenta",];
     const themes = ["Культура","Другое"];
     const apply = (state,type,label) => {
@@ -54,10 +54,12 @@ export function QueryBlock({dispatchQuery}) {
     const apply_text = (el) => {
         dispatchQuery({type:"query",value:el.target.value});
     }
-    const onSubmit = () => {
-
+    const onSubmit = (ev) => {
+        // console.log(ev);
+        ev.preventDefault();
+        reset();
     }
-    return <Form>
+    return <Form onSubmit={onSubmit}>
             <Form.Group>
                 <Form.Label>Поиск по заголовку</Form.Label>
                 <Form.Control onKeyUp={apply_text} type="text" name="query"></Form.Control>
@@ -74,7 +76,7 @@ export function QueryBlock({dispatchQuery}) {
                     <CustomFormCheck key={i} id={i} label={el} apply={apply} type="theme"/>
                 ))}
             </div>
-            <Button variant="primary" type="Submit" onSubmit={onSubmit}></Button>
+            <Button variant="primary" type="Submit"></Button>
         </Form>
 }
 
