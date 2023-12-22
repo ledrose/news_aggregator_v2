@@ -1,11 +1,12 @@
 import ErrorComponent from "../components/error_boundary";
 import fetch_news from "../components/backend_api/news";
 import NewsBlock from "../components/main_page/news_block";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useCustomFetch from "../_helpers/CustomFetchHook";
 import { Col, Row, Spinner } from "react-bootstrap";
 import {reducer, QueryBlock} from "../components/main_page/QuerySettings/QuerySettings";
 import { useReducer } from "react";
+import useInViewport from "../_helpers/UseInViewport";
 const defaultQuery = {
     query: "",
     add_source: [],
@@ -18,6 +19,8 @@ const defaultQuery = {
 export default function MainPage() {
     const load_at_once = 15
     const [data,setData] = useState([]);
+    const divRef = useRef(null);
+    const isInViewport = useInViewport(divRef);
     const [loadNext,setLoadNext] = useState(true);
     const [query,dispatchQuery] = useReducer(reducer,defaultQuery);
     const [dateOffset,setDateOffset] = useState(undefined);
@@ -34,13 +37,16 @@ export default function MainPage() {
             }
         }
     );
+    useEffect(() => {
+        if (isInViewport && !isLoading && loadNext) {
+            sendRequest(dateOffset,load_at_once,query);
+        }
+    },[isInViewport,loadNext])
     const reset = () => {
         setData([]);
         setLoadNext(true);
         setDateOffset(undefined);
-        // sendRequest(undefined,load_at_once,query);
     }
-    const load = () => sendRequest(dateOffset,load_at_once,query); 
     return <div>
         <QueryBlock dispatchQuery={dispatchQuery} reset={reset}/>
         {data.length>0 && data?.map((el)=> 
@@ -52,12 +58,10 @@ export default function MainPage() {
         {isLoading &&
             <SpinnerLoad/>
         }
-        {loadNext &&
-            <button onClick={()=>loadNext && load()}>Load more</button>
-        }
         {!loadNext &&
             <p>Scroll Ended</p>
         }
+        <div ref={divRef}></div>
     </div>
 }
 
