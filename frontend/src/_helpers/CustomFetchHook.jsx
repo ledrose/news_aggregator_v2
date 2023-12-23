@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setError } from "../_store/errorSlice";
-
+import { useNavigate } from "react-router-dom";
 
 function fetchState(isLoading,data,err) {
     return {
@@ -14,6 +14,7 @@ function fetchState(isLoading,data,err) {
 
 //isLoading,data,error
 export default function useCustomFetch(promise,onData=(json)=>{},onErr=(err)=>{}) {
+    const navigate = useNavigate();
     const [respState,setRespState] = useState(fetchState(false,null,null));
     const dispatch = useDispatch();
     const errAction = (err) => {
@@ -37,11 +38,15 @@ export default function useCustomFetch(promise,onData=(json)=>{},onErr=(err)=>{}
                     }
                 });
                 // console.log("Ok: "+resp);
+            } else if (response.status == 401) {
+                navigate("/login")
+                errAction(response.statusText)
             }
             else {
-                response.text().then((err)=> {
-                    errAction(err)
-                })
+                errAction(response.statusText);
+                // response.text().then((err)=> {
+                //     errAction(err)
+                // })
             }
         },(err) => {
             errAction(err);

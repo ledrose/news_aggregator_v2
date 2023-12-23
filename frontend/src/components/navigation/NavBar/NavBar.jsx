@@ -6,6 +6,7 @@ import usePersistentState from '../../../_helpers/UsePersistent';
 import useCustomFetch from '../../../_helpers/CustomFetchHook';
 import { useDispatch, useSelector } from 'react-redux';
 import { reset, setUser } from '../../../_store/userSlice';
+import { Link } from 'react-router-dom';
 export default function NavBar() {
     return (
         <Navbar expand="lg" bg='primary' className='bg-body-tetiary'>
@@ -29,6 +30,11 @@ function SelectInfo() {
     const [isLoading,data,err,logout] = useCustomFetch(logout_api,(data)=>{dispatch(reset())});
     if (userInfo.email!==null) {
         return <>
+            {userInfo.role=="admin" &&
+            <Button variant="secondary">
+                <Link to={"/sources"}>Sources</Link>
+            </Button>
+            }
             <Navbar.Text className='m-1'>
                 Logged as: {userInfo.email}
             </Navbar.Text>

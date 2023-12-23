@@ -79,7 +79,7 @@ pub fn update_sources_db(sources: Vec<Source>, conn: &mut PgConnection) -> Resul
     Ok(())
 }
 
-pub fn insert_sources_db(sources: Vec<Source>, conn: &mut PgConnection) -> Result<(),anyhow::Error> {
+pub fn insert_sources_db(sources: Vec<SourceInsert>, conn: &mut PgConnection) -> Result<(),anyhow::Error> {
     diesel::insert_into(sources::table)
         .values(sources)
         .execute(conn)?;

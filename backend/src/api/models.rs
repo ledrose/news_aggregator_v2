@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::db::{user::models::{User, Role}, news::models::{Theme, Source, SourceTheme}};
+use crate::db::{user::models::{User, Role}, news::models::{Theme, Source, SourceTheme, SourceInsert}};
 
 #[derive(Serialize,Deserialize,Debug)]
 pub struct NewsBatchInfo {
@@ -64,6 +64,13 @@ impl From<SourcesPatch> for Source {
     fn from(value: SourcesPatch) -> Self {
         let SourcesPatch { id, name, source_type, link, .. } = value;
         Self { id, name, source_type: Some(source_type), link: Some(link) }
+    }
+}
+
+impl From<SourcesPatch> for SourceInsert {
+    fn from(value: SourcesPatch) -> Self {
+        let SourcesPatch {name, source_type, link, .. } = value;
+        Self { name, source_type: Some(source_type), link: Some(link) }
     }
 }
 

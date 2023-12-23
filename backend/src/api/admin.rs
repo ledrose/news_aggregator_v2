@@ -11,9 +11,13 @@ pub fn admin_scope() -> Scope {
     web::scope("/admin")
         .service(get_sources)
         .service(patch_sources)
-        .default_service(web::route().to(HttpResponse::Forbidden))
+        .default_service(web::route().to(not_authorized_route))
 }
- 
+
+pub async fn not_authorized_route() -> impl Responder {
+    HttpResponse::Unauthorized().reason("Admin priveleges required").finish()
+}
+
 fn admin_guard(ctx: &GuardContext<'_>) -> bool {
     if let Ok(Some(role)) = ctx.get_session().get::<String>("role") {
         if role == "admin" {

@@ -15,6 +15,7 @@ async fn main() -> std::io::Result<()> {
     env_logger::init_from_env(Env::default().default_filter_or("debug"));
     run_migrations(&pg_conn).expect("Migrations should have been completed");
     let public_key = Key::generate();
+    // println!("{public_key:?}");
     let task_delay = time::interval(Duration::from_secs(60*5));
     start_background_tasks(pg_conn.clone(),task_delay).await;
     HttpServer::new(move || {
@@ -36,7 +37,6 @@ async fn main() -> std::io::Result<()> {
                     .cookie_same_site(actix_web::cookie::SameSite::None)
                     .build()
             )
-            .service(hello_world)
             .service(api::api_scope())
     })
     .bind(("127.0.0.1", 8080))?
@@ -44,21 +44,8 @@ async fn main() -> std::io::Result<()> {
     .await
 }
 
-// #[cfg(debug_assertions)]
 fn get_cors() -> Cors {
     Cors::permissive()
     // Cors::default().allowed_origin("http://192.168.0.4:3000/").supports_credentials()
 }
 
-
-
-#[get("/")]
-async fn hello_world(pool: Data<DBPool>, session: Session) -> actix_web::Result<impl Responder> {
-    if let Some(count) = session.get::<i32>("counter")? {
-        session.insert("counter", count+1)?;
-    } else {
-        session.insert("counter", 1)?;
-    }
-    // log::debug!("Hello world message");
-    Ok(HttpResponse::Ok().body(format!("Count is {:?}",session.get::<i32>("counter")?.unwrap())))
-}

@@ -57,7 +57,11 @@ export default function ListSourcesPage() {
         setSourcesChanged(new Map(sourcesChanged));
     }
     const deleteOld = (key) => {
-        sourcesChanged.get(key).changed="Deleted";
+        if (sourcesChanged.get(key).changed != "Added") {
+            sourcesChanged.get(key).changed = "Deleted";
+        } else {
+            sourcesChanged.delete(key);
+        }
         setSourcesChanged(new Map(sourcesChanged));
     }
     const addNew = () => {

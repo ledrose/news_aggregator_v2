@@ -21,7 +21,7 @@ pub struct NewEntry {
     pub link: String
 }
 
-#[derive(Selectable, Insertable, AsChangeset, Identifiable, Queryable,Debug,Serialize,Deserialize,PartialEq,Eq,Hash)]
+#[derive(Selectable, AsChangeset, Identifiable, Queryable,Debug,Serialize,Deserialize,PartialEq,Eq,Hash)]
 #[diesel(table_name = crate::schema::sources)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Source {
@@ -34,15 +34,12 @@ pub struct Source {
 #[derive(Insertable,Debug,Serialize,Deserialize)]
 #[diesel(table_name = crate::schema::sources)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
-pub struct SourceInsert<'a> {
-    pub name: &'a str,
+pub struct SourceInsert {
+    pub name: String,
+    pub source_type: Option<String>,
+    pub link: Option<String>
 }
-
-impl<'a> From<&'a str> for SourceInsert<'a> {
-    fn from(value: &'a str) -> Self {
-        Self { name: value }
-    }
-} 
+ 
 
 #[derive(Selectable, Identifiable, Queryable,Debug,Serialize,Deserialize)]
 #[diesel(table_name = crate::schema::themes)]
