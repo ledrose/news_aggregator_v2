@@ -7,6 +7,7 @@ import { Col, Row, Spinner } from "react-bootstrap";
 import {reducer, QueryBlock} from "../components/main_page/QuerySettings/QuerySettings";
 import { useReducer } from "react";
 import useInViewport from "../_helpers/UseInViewport";
+
 const defaultQuery = {
     query: "",
     add_source: [],

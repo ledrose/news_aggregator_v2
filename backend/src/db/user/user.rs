@@ -2,7 +2,7 @@ use bcrypt::{DEFAULT_COST, hash, verify};
 use diesel::{PgConnection, SelectableHelper, QueryDsl, RunQueryDsl, ExpressionMethods};
 use anyhow::{Result, Ok};
 
-use crate::{error::ApiError, schema::{roles, users}};
+use crate::{error::ApiError, schema::{roles, users, sourcethemes, sources, themes}, db::news::models::{SourceTheme, Source, Theme}};
 
 use super::models::*;
 
@@ -47,6 +47,28 @@ pub fn get_role_db(email: &str, conn: &mut PgConnection) -> Result<Role> {
         .select(Role::as_select())
         .first::<Role>(conn)?;
     Ok(role)
+}
+
+pub fn get_source_themes(id: i32, amount: i64, conn: &mut PgConnection) -> Result<Vec<(SourceTheme,Theme,Source)>> {
+    let res = sourcethemes::table
+        .inner_join(themes::table)
+        .inner_join(sources::table)
+        .filter(sourcethemes::id.ge(id))
+        .order_by(sourcethemes::id.asc())
+        .limit(amount)
+        .select((SourceTheme::as_select(),Theme::as_select(),Source::as_select()))
+        .get_results::<(SourceTheme,Theme,Source)>(conn)?;
+    Ok(res)
+}
+
+pub fn get_sources(id: i32,amount: i64, conn: &mut PgConnection) -> Result<Vec<Source>> {
+    let res = sources::table
+        .filter(sources::id.ge(id))
+        .order_by(sources::id.asc())
+        .limit(amount)
+        .select(Source::as_select())
+        .get_results::<Source>(conn)?;
+    Ok(res)
 }
 
 #[cfg(test)]

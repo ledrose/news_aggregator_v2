@@ -5,16 +5,15 @@ import MainPage from './pages/MainPage';
 import {Route, Routes} from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import usePersistentState from './_helpers/UsePersistent';
-import ThemesPage from './pages/ThemesPage';
+import ListSourcesPage from './pages/ListSourcesPage';
 
 function App() {
   return (
       <Routes>
         <Route exact path='/' element={<MainLayout/>}>
           <Route index element={<MainPage/>}/>
-*         <Route path='/login' element={<LoginPage/>}></Route>
-          <Route path='/themes' element={<ThemesPage/>}></Route>
+          <Route path='/login' element={<LoginPage/>}></Route>
+          <Route path='/sources' element={<ListSourcesPage/>}></Route>
         </Route>
       </Routes>
   );

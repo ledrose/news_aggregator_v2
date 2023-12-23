@@ -4,7 +4,7 @@ import { Button, Nav, NavDropdown } from 'react-bootstrap';
 import { logout_api } from '../../backend_api/login';
 import usePersistentState from '../../../_helpers/UsePersistent';
 import useCustomFetch from '../../../_helpers/CustomFetchHook';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { reset, setUser } from '../../../_store/userSlice';
 export default function NavBar() {
     return (
@@ -25,8 +25,8 @@ export default function NavBar() {
 
 function SelectInfo() {
     const userInfo = useSelector((state) => state.user);
-
-    const [isLoading,data,err,logout] = useCustomFetch(logout_api,(data)=>{reset()});
+    const dispatch = useDispatch();
+    const [isLoading,data,err,logout] = useCustomFetch(logout_api,(data)=>{dispatch(reset())});
     if (userInfo.email!==null) {
         return <>
             <Navbar.Text className='m-1'>

@@ -14,5 +14,9 @@ function basic_json_template(method,body) {
     return params;
 }   
 export default function request(relative_url,method,body) {
-    return fetch(process.env.REACT_APP_API_URL+relative_url, basic_json_template(method,body));
+    if (method == "GET") {
+        return fetch(process.env.REACT_APP_API_URL+relative_url+"?"+new URLSearchParams(body), basic_json_template(method));
+    } else {
+        return fetch(process.env.REACT_APP_API_URL+relative_url, basic_json_template(method,body));
+    }
 }

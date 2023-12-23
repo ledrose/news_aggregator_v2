@@ -2,35 +2,36 @@ use std::collections::HashSet;
 
 use anyhow::Ok;
 use chrono::{DateTime, Utc};
-use diesel::{dsl::not,PgConnection, BelongingToDsl, QueryDsl, RunQueryDsl, SelectableHelper, insert_into, ExpressionMethods, BoolExpressionMethods, GroupedBy};
+use diesel::{PgConnection, BelongingToDsl, QueryDsl, RunQueryDsl, SelectableHelper, insert_into, ExpressionMethods, BoolExpressionMethods, GroupedBy, PgTextExpressionMethods};
 use itertools::Itertools;
-use crate::{schema::{news, themes, sources, sourcethemes}, api::models::{Preferences, PreferenceType, PreferenceAction}};
+use crate::{schema::{news, themes, sources, sourcethemes}, api::models::SearchQuery};
 
 use super::models::*;
 
 
-pub fn get_news(start_date: Option<DateTime<Utc>>, amount: i64, prefs: Vec<Preferences>, conn: &mut PgConnection) -> Vec<NewsFull> {
+pub fn get_news(start_date: Option<DateTime<Utc>>, amount: i64, prefs: &SearchQuery, conn: &mut PgConnection) -> Vec<NewsFull> {
     // todo!();
     let start_date = start_date.unwrap_or(chrono::Utc::now());
     let mut query = news::table
         .left_join(sourcethemes::table.left_join(themes::table))
         .left_join(sources::table)
         .into_boxed();
-    for pref in prefs {
-        query = match pref.pref_type {
-                PreferenceType::Source { name } => {
-                    match &pref.action {
-                        PreferenceAction::Add => {query.or_filter(sources::name.eq(name))}
-                        PreferenceAction::Remove => {query.filter(sources::name.ne(name))},
-                    }
-                },
-                PreferenceType::Theme { name } => {
-                    match &pref.action {
-                        PreferenceAction::Add => {query.or_filter(themes::theme_name.eq(name))}
-                        PreferenceAction::Remove => {query.filter(themes::theme_name.ne(name))},
-                    }
-                }
-        };
+    for pref in &prefs.add_source {
+        query = query.or_filter(sources::name.eq(pref));
+    }
+    for pref in &prefs.remove_source {
+        query = query.filter(sources::name.ne(pref));
+    }
+    for pref in &prefs.add_themes {
+        query = query.or_filter(themes::theme_name.eq(pref))
+    }
+    for pref in &prefs.remove_themes {
+        query = query.filter(themes::theme_name.ne(pref))
+    }
+    if let Some(search) = &prefs.query {
+        if search!="" {
+            query = query.filter(news::header.ilike(format!("%{search}%")))
+        }
     }
     query
         .filter(news::date_time.lt(start_date))
@@ -42,11 +43,22 @@ pub fn get_news(start_date: Option<DateTime<Utc>>, amount: i64, prefs: Vec<Prefe
         .into_iter().filter_map(|x| x.try_into().ok()).collect_vec()
 }
 
-pub fn get_sources_by_type(type_val: &str, conn: &mut PgConnection) -> Result<Vec<Source>,anyhow::Error> {
-    let res: Vec<Source> = sources::table
-        .filter(sources::source_type.eq(type_val))
+// pub fn get_sources_by_type(type_val: &str, conn: &mut PgConnection) -> Result<Vec<Source>,anyhow::Error> {
+//     let res: Vec<Source> = sources::table
+//         .filter(sources::source_type.eq(type_val))
+//         .select(Source::as_select())
+//         .load::<Source>(conn)?;
+//     Ok(res)
+// }
+
+pub fn get_sources_db(id0: Option<i32>, amount: i64, conn: &mut PgConnection) -> Result<Vec<Source>,anyhow::Error>  {
+    let id0 = id0.unwrap_or(0);
+    let res = sources::table
+        .filter(sources::id.gt(id0))
+        .order_by(sources::id.asc())
+        .limit(amount)
         .select(Source::as_select())
-        .load::<Source>(conn)?;
+        .get_results::<Source>(conn)?;
     Ok(res)
 }
 
