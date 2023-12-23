@@ -1,19 +1,22 @@
 import {configureStore} from "@reduxjs/toolkit";
 import errorReducer from "./errorSlice";
 import userReducer from "./userSlice";
+import storage from "redux-persist/lib/storage"
+import {persistStore, persistReducer} from "redux-persist";
 
-const persistedState = localStorage.getItem('reduxStorage')?JSON.parse(localStorage.getItem('reduxStorage')):{};
+const persistConfig = {
+    key: "root",
+    storage
+}
+
+const persistedReducer = persistReducer(persistConfig,userReducer)
 
 const store =  configureStore({
     reducer: {
         error: errorReducer,
-        user: userReducer,
+        user: persistedReducer,
     },
-    persistedState
-})
-
-store.subscribe(() => {
-    localStorage.setItem("reduxStorage",JSON.stringify(store.getState()));
 })
 
 export default store;
+export const persistor = persistStore(store);

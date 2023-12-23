@@ -1,5 +1,5 @@
 use actix_session::SessionExt;
-use actix_web::{Scope, guard, web::{self, Data, Json, Query}, post, Responder, HttpResponse, get};
+use actix_web::{Scope, guard::{self, GuardContext, Guard}, web::{self, Data, Json, Query, route}, post, Responder, HttpResponse, get, dev::Service};
 
 use crate::{db::{user::user::{get_all_users, get_source_themes}, DBPool, news::news::get_sources_db}, error::ApiError, api::models::{PaginateData, SourceThemesResp}};
 
@@ -7,22 +7,52 @@ use super::models::UserAnswer;
 
 
 pub fn admin_scope() -> Scope {
-    Scope::new("/admin")
-        .guard(guard::fn_guard(|ctx| {
-            if let Ok(Some(role)) = ctx.get_session().get::<String>("role") {
-                if role == "admin" {
-                    println!("GuardCheck True");
-                    return true;
-                }
-            }
-            println!("GuardCheck False");
-            false
-        }))
-        .service(get_user_list)
+    web::scope("/admin")
         .service(get_sources)
+        .default_service(web::route().to(HttpResponse::Forbidden))
+        // .service(web::h)
+    
+    // web::resource("/admin")
+    //     .route(
+    //         web::route().guard(guard::fn_guard(admin_guard)).service(get_sources)
+    //     ).route(
+        
+    //     )
+    //         .service(get_user_list)
+        
 }
 
-#[get("/users")]
+// struct AdminGuard;
+// impl Guard for AdminGuard {
+//     fn check(&self, ctx: &GuardContext<'_>) -> bool {
+//         println!("In guardCheck");
+//         if let Ok(Some(role)) = ctx.get_session().get::<String>("role") {
+//             println!("RoleGuard: {role}");
+//             if role == "admin" {
+//                 println!("GuardCheck True");
+//                 return true;
+//             }
+//         }
+//         println!("GuardCheck False");
+//         false
+//     }
+// }
+
+fn admin_guard(ctx: &GuardContext<'_>) -> bool {
+    println!("In guardCheck");
+    if let Ok(Some(role)) = ctx.get_session().get::<String>("role") {
+        println!("RoleGuard: {role}");
+        if role == "admin" {
+            println!("GuardCheck True");
+            return true;
+        }
+    }
+    println!("GuardCheck False");
+    false
+}
+
+
+#[get("/users",guard="admin_guard")]
 pub async fn get_user_list(pool: Data<DBPool>) -> actix_web::Result<impl Responder> {
     let user_list = web::block(move || {
         let mut conn = pool.get()?;

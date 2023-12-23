@@ -7,10 +7,10 @@ export default function ListSourcesPage() {
     const [firstId,setFirstId] = useState(0);
     const [sources,setSources] = useState([]);
     const [isLoading,data,error,sendRequest] = useCustomFetch(get_sources_api,(data) => {
-        console.log(data);
         if (data.length!=0) {
             setFirstId(data[0].id)
             setSources(data);
+            console.log(data);
         }
     });
     useEffect(() => {
@@ -36,8 +36,8 @@ export default function ListSourcesPage() {
                     </tr>
                 </thead>
                 <tbody>
-                    {data && data?.map((el) => (
-                        <TableRow data={el}></TableRow>
+                    {sources.length!=0 && sources.map((el,i) => (
+                        <TableRow key={i} data={el}></TableRow>
                     ))}
                 </tbody>
             </Table>
@@ -47,7 +47,7 @@ export default function ListSourcesPage() {
     )
 }
 
-function TableRow(data) {
+function TableRow({data}) {
     return (
         <tr>
             <td>{data.id}</td>

@@ -1,4 +1,4 @@
-use actix_web::{web::{ServiceConfig, self}, Scope};
+use actix_web::{web::{ServiceConfig, self}, Scope, HttpResponse};
 
 
 pub mod auth;
@@ -12,3 +12,4 @@ pub fn api_scope() -> Scope {
         .service(news::news_scope())
         .service(admin::admin_scope())
 }
+
