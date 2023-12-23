@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use chrono::Utc;
-use diesel::{Queryable, Selectable, associations::{Associations, Identifiable}, prelude::Insertable};
+use diesel::{Queryable, Selectable, associations::{Associations, Identifiable}, prelude::Insertable, query_builder::AsChangeset};
 use serde::{Serialize, Deserialize};
 
 use crate::schema::news::description;
@@ -21,7 +21,7 @@ pub struct NewEntry {
     pub link: String
 }
 
-#[derive(Selectable, Identifiable, Queryable,Debug,Serialize,Deserialize,PartialEq,Eq,Hash)]
+#[derive(Selectable, Insertable, AsChangeset, Identifiable, Queryable,Debug,Serialize,Deserialize,PartialEq,Eq,Hash)]
 #[diesel(table_name = crate::schema::sources)]
 #[diesel(check_for_backend(diesel::pg::Pg))]
 pub struct Source {

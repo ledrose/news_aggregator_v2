@@ -50,3 +50,19 @@ impl From<(SourceTheme,Theme,Source)> for SourceThemesResp {
         Self { id: value.0.id, source: value.2.name, theme: value.1.theme_name, name: value.0.source_theme_name }
     }
 }
+
+#[derive(Debug,Deserialize,Clone)]
+pub struct SourcesPatch {
+    pub id: i32,
+    pub name: String,
+    pub source_type: String,
+    pub link: String,
+    pub changed: Option<String>
+}
+
+impl From<SourcesPatch> for Source {
+    fn from(value: SourcesPatch) -> Self {
+        let SourcesPatch { id, name, source_type, link, .. } = value;
+        Self { id, name, source_type: Some(source_type), link: Some(link) }
+    }
+}

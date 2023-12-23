@@ -6,3 +6,7 @@ export async function get_sources_api(id0,amount) {
         amount: amount
     })
 }
+
+export async function update_source_api(sources) {
+    return request('admin/sources',"PATCH",sources)
+}

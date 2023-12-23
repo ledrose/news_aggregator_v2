@@ -62,6 +62,29 @@ pub fn get_sources_db(id0: Option<i32>, amount: i64, conn: &mut PgConnection) ->
     Ok(res)
 }
 
+pub fn update_sources_db(sources: Vec<Source>, conn: &mut PgConnection) -> Result<(),anyhow::Error> {
+    for source in sources {
+        diesel::update(sources::table)
+            .set(source)
+            .execute(conn)?;
+    }
+    Ok(())
+}
+
+pub fn insert_sources_db(sources: Vec<Source>, conn: &mut PgConnection) -> Result<(),anyhow::Error> {
+    diesel::insert_into(sources::table)
+        .values(sources)
+        .execute(conn)?;
+    Ok(())
+}
+
+pub fn delete_sources_db(source_ids: Vec<i32>, conn: &mut PgConnection) -> Result<(),anyhow::Error> {
+    diesel::delete(sources::table.filter(sources::id.eq_any(source_ids)))
+        .execute(conn)?;
+    Ok(())
+}
+
+
 pub fn get_sources_and_last_entry_by_type(type_val: &str, conn: &mut PgConnection) -> Result<Vec<(Source,Option<NewEntry>)>,anyhow::Error> {
     let sources: Vec<Source> = sources::table
         .filter(sources::source_type.eq(type_val))

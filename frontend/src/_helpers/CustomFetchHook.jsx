@@ -32,11 +32,11 @@ export default function useCustomFetch(promise,onData=(json)=>{},onErr=(err)=>{}
                         errAction(err);
                     } else {
                         setRespState(fetchState(false,data,null));
-                        console.log(data);
+                        // console.log(data);
                         onData(data);
                     }
                 });
-                console.log("Ok: "+resp);
+                // console.log("Ok: "+resp);
             }
             else {
                 response.text().then((err)=> {
