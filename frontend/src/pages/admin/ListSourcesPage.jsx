@@ -1,6 +1,6 @@
 import { Button, Container, Table, Form } from "react-bootstrap"
-import useCustomFetch from "../_helpers/CustomFetchHook"
-import { get_sources_api, update_source_api } from "../components/backend_api/admin";
+import useCustomFetch from "../../_helpers/CustomFetchHook"
+import { get_sources_api, update_source_api } from "../../components/backend_api/admin";
 import { useEffect, useRef, useState } from "react";
 
 
@@ -25,8 +25,10 @@ export default function ListSourcesPage() {
     })
     const update_all = () => {
         const toSend = [...sourcesChanged.values()].filter((el) => el.changed!=null);
-        console.log(toSend);
-        updateRequest(toSend);
+        if (toSend.length!=0) {            
+            console.log(toSend);
+            updateRequest(toSend);
+        }   
     }
     useEffect(() => {
         sendRequest(0,amount_on_page);
@@ -71,7 +73,7 @@ export default function ListSourcesPage() {
         setSourcesChanged(new Map(sourcesChanged));
     }
     // console.log(sourcesChanged);
-    const nextDis = amount_on_page>sources.length;
+    const nextDis = amount_on_page>sources.size;
     const prevDis = firstId===1;
     return (
         <Container>

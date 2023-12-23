@@ -4,7 +4,7 @@ use anyhow::Ok;
 use chrono::{DateTime, Utc};
 use diesel::{PgConnection, BelongingToDsl, QueryDsl, RunQueryDsl, SelectableHelper, insert_into, ExpressionMethods, BoolExpressionMethods, GroupedBy, PgTextExpressionMethods};
 use itertools::Itertools;
-use crate::{schema::{news, themes, sources, sourcethemes}, api::models::SearchQuery};
+use crate::{schema::{news, themes, sources, sourcethemes}, api::models::{SearchQuery, SourceThemePatch}};
 
 use super::models::*;
 
@@ -92,6 +92,35 @@ pub fn delete_sources_db(source_ids: Vec<i32>, conn: &mut PgConnection) -> Resul
     Ok(())
 }
 
+pub fn update_source_themes_db(data: Vec<SourceThemePatch>, conn: &mut PgConnection) -> Result<(),anyhow::Error> {
+    let themes_names: Vec<&String> = data.iter().map(|x| &x.theme).collect();
+    let mut themes: Vec<Theme> = themes::table
+        .filter(themes::theme_name.eq_any(themes_names))
+        .select(Theme::as_select())
+        .get_results::<Theme>(conn)?;
+    let not_existant_themes: Vec<ThemeInsert> = data.iter()
+        .filter(|x| !themes.iter().any(|y| x.theme==y.theme_name))
+        .cloned().map(|x| x.theme.into()).collect_vec();
+    if !not_existant_themes.is_empty() {
+        let mut another = insert_into(themes::table)
+            .values(not_existant_themes)
+            .returning(Theme::as_returning())
+            .get_results(conn)?;
+        themes.append(&mut another);
+    }
+    let ids_vec = data.iter()
+        .map(|x| (x,themes.iter().find_or_first(|theme| theme.theme_name==x.theme)))
+        .filter(|x| x.1.is_some())
+        .map(|x| (x.0,x.1.unwrap()))
+        .map(|x| (x.0.id,x.1.id)).collect_vec();
+    for item in ids_vec {
+        diesel::update(sourcethemes::table)
+            .filter(sourcethemes::id.eq(item.0))
+            .set(sourcethemes::theme_id.eq(item.1))
+            .execute(conn)?;
+    }
+        Ok(())
+}
 
 pub fn get_sources_and_last_entry_by_type(type_val: &str, conn: &mut PgConnection) -> Result<Vec<(Source,Option<NewEntry>)>,anyhow::Error> {
     let sources: Vec<Source> = sources::table

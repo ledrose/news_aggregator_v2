@@ -2,7 +2,7 @@ use actix_session::SessionExt;
 use actix_web::{Scope, guard::{self, GuardContext, Guard}, web::{self, Data, Json, Query, route}, post, Responder, HttpResponse, get, dev::Service, patch};use itertools::Itertools;
 use serde_json::json;
 
-use crate::{db::{user::user::{get_all_users, get_source_themes}, DBPool, news::news::{get_sources_db, update_sources_db, insert_sources_db, delete_sources_db}}, error::ApiError, api::models::{PaginateData, SourceThemesResp}};
+use crate::{db::{user::user::{get_all_users, get_source_themes}, DBPool, news::news::{get_sources_db, update_sources_db, insert_sources_db, delete_sources_db, update_source_themes_db}}, error::ApiError, api::models::{PaginateData, SourceThemesResp, SourceThemePatch}};
 
 use super::models::{UserAnswer, SourcesPatch};
 
@@ -11,6 +11,8 @@ pub fn admin_scope() -> Scope {
     web::scope("/admin")
         .service(get_sources)
         .service(patch_sources)
+        .service(get_themes)
+        .service(patch_themes)
         .default_service(web::route().to(not_authorized_route))
 }
 
@@ -40,23 +42,12 @@ pub async fn get_user_list(pool: Data<DBPool>) -> actix_web::Result<impl Respond
     Ok(HttpResponse::Ok().json(user_answer))
 }
 
-// #[post("/sourcethemes/")]
-// pub async fn get_sourcethemes(pool: Data<DBPool>,input: Json<PaginateData>) -> actix_web::Result<impl Responder> {
-//     let user_list = web::block(move || {
-//         let mut conn = pool.get()?;
-//         get_source_themes(input.id, input.amount, &mut conn)
-//     }).await?
-//         .map_err(|_| ApiError::InternalError)?;
-//     let user_answer: Vec<SourceThemesResp> = user_list.into_iter().map(|x| x.into()).collect();
-//     Ok(HttpResponse::Ok().json(user_answer))
-// }
-
 
 #[get("/sources",guard="admin_guard")]
 pub async fn get_sources(pool: Data<DBPool>, query: Query<PaginateData>) -> actix_web::Result<impl Responder> {
     let source_list = web::block(move || {
         let mut conn = pool.get()?;
-        get_sources_db(query.id, query.amount, &mut conn)
+        get_sources_db(query.id0, query.amount, &mut conn)
     }).await?
         .map_err(|_| ApiError::InternalError)?;
     Ok(HttpResponse::Ok().json(source_list))
@@ -73,6 +64,29 @@ pub async fn patch_sources(pool: Data<DBPool>,data: Json<Vec<SourcesPatch>>) -> 
         update_sources_db(to_update, &mut conn)?;
         insert_sources_db(to_add, &mut conn)?;
         delete_sources_db(to_delete, &mut conn)
+        // get_sources_db(query.id, query.amount, &mut conn)
+    }).await?
+        .map_err(|_| ApiError::InternalError)?;
+    Ok(HttpResponse::Ok().json(json!({"success":"sucess"})))
+}
+
+#[get("/themes",guard="admin_guard")]
+pub async fn get_themes(pool: Data<DBPool>, query: Query<PaginateData>) -> actix_web::Result<impl Responder> {
+    let source_list = web::block(move || {
+        let mut conn = pool.get()?;
+        get_source_themes(query.id0, query.amount, &mut conn)
+    }).await?
+        .map_err(|_| ApiError::InternalError)?;
+    let source_list: Vec<SourceThemesResp> = source_list.into_iter().map(|x| x.into()).collect_vec();
+    Ok(HttpResponse::Ok().json(source_list))
+}
+
+#[patch("/themes",guard="admin_guard")]
+pub async fn patch_themes(pool: Data<DBPool>,data: Json<Vec<SourceThemePatch>>) -> actix_web::Result<impl Responder> {
+    println!("{data:?}");
+    web::block(move || {
+        let mut conn = pool.get()?;
+        update_source_themes_db(data.0, &mut conn)
         // get_sources_db(query.id, query.amount, &mut conn)
     }).await?
         .map_err(|_| ApiError::InternalError)?;

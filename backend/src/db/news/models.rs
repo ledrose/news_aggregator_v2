@@ -49,6 +49,19 @@ pub struct Theme {
     pub theme_name: String
 }
 
+#[derive(Debug,Insertable)]
+#[diesel(table_name=crate::schema::themes)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct ThemeInsert {
+    pub theme_name: String
+}
+
+impl From<String> for ThemeInsert {
+    fn from(value: String) -> Self {
+        Self { theme_name: value }
+    }
+}
+
 #[derive(Selectable, Identifiable, Associations, Queryable,Debug,Serialize,Deserialize,PartialEq, Eq,Hash)]
 #[diesel(table_name = crate::schema::sourcethemes)]
 #[diesel(belongs_to(Theme))]

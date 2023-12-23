@@ -33,7 +33,7 @@ pub struct SearchQuery {
 
 #[derive(Debug,Deserialize)]
 pub struct PaginateData {
-    pub id: Option<i32>,
+    pub id0: Option<i32>,
     pub amount: i64
 }
 
@@ -79,3 +79,10 @@ pub struct SearchOptions {
     pub sources: Vec<String>,
     pub themes: Vec<String>
 }
+
+#[derive(Debug,Deserialize,Clone)]
+pub struct SourceThemePatch {
+    pub id: i32,
+    pub theme: String,
+}
+

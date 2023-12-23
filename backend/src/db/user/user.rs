@@ -49,7 +49,8 @@ pub fn get_role_db(email: &str, conn: &mut PgConnection) -> Result<Role> {
     Ok(role)
 }
 
-pub fn get_source_themes(id: i32, amount: i64, conn: &mut PgConnection) -> Result<Vec<(SourceTheme,Theme,Source)>> {
+pub fn get_source_themes(id: Option<i32>, amount: i64, conn: &mut PgConnection) -> Result<Vec<(SourceTheme,Theme,Source)>> {
+    let id = id.unwrap_or(1);
     let res = sourcethemes::table
         .inner_join(themes::table)
         .inner_join(sources::table)

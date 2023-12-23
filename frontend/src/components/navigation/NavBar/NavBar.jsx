@@ -31,9 +31,14 @@ function SelectInfo() {
     if (userInfo.email!==null) {
         return <>
             {userInfo.role=="admin" &&
-            <Button variant="secondary">
-                <Link to={"/sources"}>Sources</Link>
-            </Button>
+            <>
+                <Button variant="secondary">
+                    <Link to={"/sources"}>Sources</Link>
+                </Button>
+                <Button variant="secondary">
+                    <Link to={"/themes"}>Themes</Link>
+                </Button>
+            </>
             }
             <Navbar.Text className='m-1'>
                 Logged as: {userInfo.email}

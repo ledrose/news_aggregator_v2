@@ -23,7 +23,7 @@ pub async fn news(pool: Data<DBPool>,news_batch: Json<NewsBatchInfo>) -> actix_w
         Ok(get_news(news_batch.start_date, news_batch.amount, &news_batch.prefs, &mut conn))
     }).await?
     .map_err(|_: Error| error::ApiError::InternalError)?;
-    log::debug!("{res:?}");
+    // log::debug!("{res:?}");
     Ok(HttpResponse::Ok().json(res))
 }
 
