@@ -51,6 +51,14 @@ pub fn get_news(start_date: Option<DateTime<Utc>>, amount: i64, prefs: &SearchQu
 //     Ok(res)
 // }
 
+pub fn get_all_themes_db(conn: &mut PgConnection) -> Result<Vec<Theme>,anyhow::Error> {
+    let res = themes::table
+        .order_by(themes::id)
+        .select(Theme::as_select())
+        .get_results(conn)?;
+    Ok(res)
+}
+
 pub fn get_sources_db(id0: Option<i32>, amount: i64, conn: &mut PgConnection) -> Result<Vec<Source>,anyhow::Error>  {
     let id0 = id0.unwrap_or(0);
     let res = sources::table

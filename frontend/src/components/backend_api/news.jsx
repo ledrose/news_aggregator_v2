@@ -9,3 +9,6 @@ export default async function fetch_news(maxId, amount,searchQuery) {
     });
 }
 
+export async function get_search_options_api() {
+    return request("news/search_info","GET")
+}

@@ -66,3 +66,9 @@ impl From<SourcesPatch> for Source {
         Self { id, name, source_type: Some(source_type), link: Some(link) }
     }
 }
+
+#[derive(Debug,Serialize)]
+pub struct SearchOptions {
+    pub sources: Vec<String>,
+    pub themes: Vec<String>
+}

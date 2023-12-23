@@ -1,6 +1,8 @@
 import { useEffect, useReducer, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import "./QuerySettings.css"
+import useCustomFetch from "../../../_helpers/CustomFetchHook";
+import { get_search_options_api } from "../../backend_api/news";
 
 const defaultQuery = {
     query: "",
@@ -46,8 +48,10 @@ export  function reducer(current,action) {
 }
 
 export function QueryBlock({dispatchQuery,reset}) {
-    const sources = ["Lenta",];
-    const themes = ["Культура","Другое"];
+    const [,data,,sendRequest] = useCustomFetch(get_search_options_api);
+    useEffect(() => sendRequest(),[]);
+    const sources = data?.sources??[];
+    const themes = data?.themes??[];
     const apply = (state,type,label) => {
         dispatchQuery({type:type,state:state,label:label})
     }
