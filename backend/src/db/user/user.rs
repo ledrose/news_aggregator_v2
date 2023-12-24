@@ -1,6 +1,7 @@
 use bcrypt::{DEFAULT_COST, hash, verify};
 use diesel::{PgConnection, SelectableHelper, QueryDsl, RunQueryDsl, ExpressionMethods};
 use anyhow::{Result, Ok};
+use itertools::Itertools;
 
 use crate::{error::ApiError, schema::{roles, users, sourcethemes, sources, themes}, db::news::models::{SourceTheme, Source, Theme}};
 
@@ -32,12 +33,42 @@ pub fn add_user_inter(user_form: &UserRegister, conn: &mut PgConnection) -> Resu
     Ok(ret)
 }
 
-pub fn get_all_users(conn: &mut PgConnection) -> Result<Vec<(User,Role)>> {
+pub fn get_all_roles_db(conn: &mut PgConnection) -> Result<Vec<Role>> {
+    let ret = roles::table
+        .select(Role::as_select())
+        .get_results(conn)?;
+    Ok(ret)
+}
+
+pub fn get_users_db(id: Option<i32>, amount: i64, conn: &mut PgConnection) -> Result<Vec<(User,Role)>> {
+    let id = id.unwrap_or(0);
     let res = users::table
         .inner_join(roles::table)
+        .filter(users::id.ge(id))
+        .limit(amount)
         .select((User::as_select(), Role::as_select()))
         .get_results::<(User,Role)>(conn)?;
     Ok(res)
+}
+
+pub fn update_users_db(users_vec: Vec<UserUpdate>,conn: &mut PgConnection) -> Result<(),anyhow::Error> {
+    let roles = get_all_roles_db(conn)?;
+    let users_vec = users_vec.iter().map(|x| (x,roles.iter().find_or_first(|y| x.role==y.name)))
+        .filter(|x| x.1.is_some())
+        .map(|x| (x.0.id,x.1.unwrap().id)).collect_vec();
+    for user in users_vec {
+        diesel::update(users::table)
+            .set(users::role_id.eq(user.1))
+            .filter(users::role_id.eq(user.0))
+            .execute(conn);
+    }
+    Ok(())
+}
+pub fn delete_users_db(ids: Vec<i32>,conn: &mut PgConnection) -> Result<(),anyhow::Error> {
+    diesel::delete(users::table)
+        .filter(users::id.eq_any(ids))
+        .execute(conn)?;
+    Ok(())
 }
 
 pub fn get_role_db(email: &str, conn: &mut PgConnection) -> Result<Role> {
@@ -50,7 +81,7 @@ pub fn get_role_db(email: &str, conn: &mut PgConnection) -> Result<Role> {
 }
 
 pub fn get_source_themes(id: Option<i32>, amount: i64, conn: &mut PgConnection) -> Result<Vec<(SourceTheme,Theme,Source)>> {
-    let id = id.unwrap_or(1);
+    let id = id.unwrap_or(0);
     let res = sourcethemes::table
         .inner_join(themes::table)
         .inner_join(sources::table)

@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::db::{user::models::{User, Role}, news::models::{Theme, Source, SourceTheme, SourceInsert}};
+use crate::db::{user::models::{User, Role, UserUpdate}, news::models::{Theme, Source, SourceTheme, SourceInsert}};
 
 #[derive(Serialize,Deserialize,Debug)]
 pub struct NewsBatchInfo {
@@ -12,13 +12,14 @@ pub struct NewsBatchInfo {
 
 #[derive(Debug,Serialize)]
 pub struct UserAnswer {
+    pub id: i32,
     pub email: String,
     pub role: String,
 }
 
 impl From<(User,Role)> for UserAnswer {
     fn from(value: (User,Role)) -> Self {
-        Self { email: value.0.email, role: value.1.name }
+        Self { id: value.0.id, email: value.0.email, role: value.1.name }
     }
 }
 
@@ -86,3 +87,16 @@ pub struct SourceThemePatch {
     pub theme: String,
 }
 
+#[derive(Debug,Deserialize,Clone)]
+pub struct UsersPatch {
+    pub id: i32,
+    pub role: String,
+    pub changed: Option<String>
+}
+
+impl From<UsersPatch> for UserUpdate {
+    fn from(value: UsersPatch) -> Self {
+        let UsersPatch { id, role, .. } = value;
+        Self { id, role }
+    }
+}

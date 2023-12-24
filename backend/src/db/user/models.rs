@@ -34,6 +34,11 @@ pub struct UserWithRole {
     pub role: String
 }
 
+pub struct UserUpdate {
+    pub id: i32,
+    pub role: String,
+}
+
 #[derive(Debug,Deserialize)]
 pub struct UserForm {
     pub email: String,

@@ -38,6 +38,9 @@ function SelectInfo() {
                 <Button variant="secondary">
                     <Link to={"/themes"}>Themes</Link>
                 </Button>
+                <Button variant="secondary">
+                    <Link to={"/users"}>Users</Link>
+                </Button>
             </>
             }
             <Navbar.Text className='m-1'>
