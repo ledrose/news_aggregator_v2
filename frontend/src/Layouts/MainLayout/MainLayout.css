@@ -1,0 +1,8 @@
+.main-container {
+    background-color: var(--background-color);
+    height: 100%;
+}
+
+.main-column {
+    background-color: var(--secondary-color);
+}

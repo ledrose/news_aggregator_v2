@@ -1,6 +1,6 @@
 import ErrorComponent from "../components/error_boundary";
 import fetch_news from "../components/backend_api/news";
-import NewsBlock from "../components/main_page/news_block";
+import NewsBlock from "../components/main_page/NewsBlock/NewsBlock";
 import { useEffect, useRef, useState } from "react";
 import useCustomFetch from "../_helpers/CustomFetchHook";
 import { Col, Row, Spinner } from "react-bootstrap";
@@ -49,11 +49,14 @@ export default function MainPage() {
         setDateOffset(undefined);
     }
     return <div>
-        <QueryBlock dispatchQuery={dispatchQuery} reset={reset}/>
+        <Row className="justify-content-center">
+            <Col md="4">
+                <QueryBlock dispatchQuery={dispatchQuery} reset={reset}/>
+            </Col>
+        </Row>
         {data.length>0 && data?.map((el)=> 
             <div key={el.id}>   
                 <NewsBlock news_info={el}/>
-                <hr></hr>
             </div>
         )}
         {isLoading &&

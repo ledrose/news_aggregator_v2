@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useState } from "react";
-import { Button, Form } from "react-bootstrap";
+import { Button, Form, FormGroup, Row,Col } from "react-bootstrap";
 import "./QuerySettings.css"
 import useCustomFetch from "../../../_helpers/CustomFetchHook";
 import { get_search_options_api } from "../../backend_api/news";
@@ -68,19 +68,31 @@ export function QueryBlock({dispatchQuery,reset}) {
                 <Form.Label>Поиск по заголовку</Form.Label>
                 <Form.Control onKeyUp={apply_text} type="text" name="query"></Form.Control>
             </Form.Group>
-            <div className="mb-3">
-                <Form.Label>Источник</Form.Label>
+            <div className="mb-3 pt-3">
+                <Row className="justify-content-start">
+                    {/* <Col md="1"> */}
+                        <Form.Label>Источники:</Form.Label>
+                    {/* </Col> */}
                 {sources.map((el,i) => (
                     <CustomFormCheck key={i} id={i} label={el} apply={apply} type="source"/>
                 ))}
+                </Row>
             </div>
             <div className="mb-3">
-                <Form.Label>Темы</Form.Label>
+                <Row className="justify-content-start">
+                {/* <Col md="1"> */}
+                    <Form.Label>Темы:</Form.Label>
+                {/* </Col> */}
                 {themes.map((el,i) => (
                     <CustomFormCheck key={i} id={i} label={el} apply={apply} type="theme"/>
                 ))}
+                </Row>
             </div>
-            <Button variant="primary" type="Submit">Apply stats</Button>
+            <Row className="justify-content-center">
+                {/* <Col> */}
+                    <Button size="lg" variant="primary" type="Submit">Найти</Button>
+                {/* </Col> */}
+            </Row>
         </Form>
 }
 
@@ -93,9 +105,11 @@ function CustomFormCheck({label,type,apply}) {
     }
     const checked = (state!==0)?true:false
     const Cname = (state==2)?"form-check-input-crossed":"";
-    return <div className="form-check">
-        <input type="checkbox" checked={checked} onChange={changeState} className={Cname+" form-check-input"}></input>
-        <label title="" className="form-check-label">{label}</label>
-    </div>
+    return <Col>
+        <div className="form-check">
+            <input type="checkbox" checked={checked} onChange={changeState} className={Cname+" form-check-input"}></input>
+            <label title="" className="form-check-label">{label}</label>
+        </div>
+    </Col>
     
 }
