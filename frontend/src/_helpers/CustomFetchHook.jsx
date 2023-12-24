@@ -43,10 +43,9 @@ export default function useCustomFetch(promise,onData=(json)=>{},onErr=(err)=>{}
                 errAction(response.statusText)
             }
             else {
-                errAction(response.statusText);
-                // response.text().then((err)=> {
-                //     errAction(err)
-                // })
+                response.text().then((text) => {
+                    errAction(text);
+                },(e)=> errAction(response.statusText))
             }
         },(err) => {
             errAction(err);

@@ -7,13 +7,15 @@ use derive_more::{Display, Error};
 pub enum ApiError {
     #[display(fmt="Invalid login or password")]
     LoginError,
-    #[display(fmt="Registration failed")]
+    #[display(fmt="This user already exists")]
     RegistrationError,
     #[display(fmt="Internal error")]
     InternalError,
     #[display(fmt="Not logged into account")]
-    NotLoggedError
+    NotLoggedError,
 }
+
+
 
 impl error::ResponseError for ApiError {
     fn status_code(&self) -> actix_web::http::StatusCode {

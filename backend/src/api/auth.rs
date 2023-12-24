@@ -17,12 +17,12 @@ pub fn auth_scope() -> Scope {
 
 #[post("/register")]
 pub async fn register(pool: Data<DBPool>,user: Json<UserRegister>) -> actix_web::Result<impl Responder> {
+
     let user_db = web::block(move || {
-        let mut conn = pool.get()?;
+        let mut conn = pool.get().map_err(|_| ApiError::InternalError)?;
         add_user_inter(&user, &mut conn)
     })
-    .await?
-    .map_err(|_| ApiError::InternalError)?;
+    .await??;
     Ok(HttpResponse::Ok().json(user_db))
 }
 

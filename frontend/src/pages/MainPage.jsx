@@ -1,9 +1,9 @@
 import ErrorComponent from "../components/error_boundary";
 import fetch_news from "../components/backend_api/news";
 import NewsBlock from "../components/main_page/NewsBlock/NewsBlock";
-import { useEffect, useRef, useState } from "react";
+import { Children, useEffect, useRef, useState } from "react";
 import useCustomFetch from "../_helpers/CustomFetchHook";
-import { Col, Row, Spinner } from "react-bootstrap";
+import { Col, Row, Spinner, Container } from "react-bootstrap";
 import {reducer, QueryBlock} from "../components/main_page/QuerySettings/QuerySettings";
 import { useReducer } from "react";
 import useInViewport from "../_helpers/UseInViewport";
@@ -16,6 +16,16 @@ const defaultQuery = {
     remove_themes: [],
 }
 
+function ScrollLayout({children}) {
+    return <Container fluid className="main-container" style={{minHeight:"100vh"}}>
+    <Row className="justify-content-center" style={{minHeight:"100vh"}}>
+        <Col md="8" className="main-column">
+            {children}
+        </Col>                
+    </Row>
+</Container>
+
+}
 
 export default function MainPage() {
     const load_at_once = 15
@@ -48,7 +58,7 @@ export default function MainPage() {
         setLoadNext(true);
         setDateOffset(undefined);
     }
-    return <div>
+    return <ScrollLayout>
         <Row className="justify-content-center">
             <Col md="4">
                 <QueryBlock dispatchQuery={dispatchQuery} reset={reset}/>
@@ -66,7 +76,7 @@ export default function MainPage() {
             <p>Scroll Ended</p>
         }
         <div ref={divRef}></div>
-    </div>
+    </ScrollLayout>
 }
 
 

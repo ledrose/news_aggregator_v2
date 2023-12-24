@@ -9,6 +9,16 @@ export async function login_api(email,password) {
     );
 }
 
+export async function register_api(email,password) {
+    // console.log(email,password);
+    return request("auth/register","POST",
+        {
+            "email": email,
+            "password": password,
+        }
+    );
+}
+
 export async function logout_api() {
     return request("auth/logout","GET");
 }

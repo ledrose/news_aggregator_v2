@@ -1,6 +1,6 @@
 use bcrypt::{DEFAULT_COST, hash, verify};
 use diesel::{PgConnection, SelectableHelper, QueryDsl, RunQueryDsl, ExpressionMethods};
-use anyhow::{Result, Ok};
+use anyhow::{Result, Ok, anyhow};
 use itertools::Itertools;
 
 use crate::{error::ApiError, schema::{roles, users, sourcethemes, sources, themes}, db::news::models::{SourceTheme, Source, Theme}};
@@ -21,17 +21,27 @@ pub fn auth_inter(user_form: &UserForm, conn: &mut PgConnection) -> Result<UserW
     }
 }
 
-pub fn add_user_inter(user_form: &UserRegister, conn: &mut PgConnection) -> Result<User> {
-    let ret = diesel::insert_into(users::table)
+pub fn add_user_inter(user_form: &UserRegister, conn: &mut PgConnection) -> Result<User,ApiError> {
+    use diesel::OptionalExtension;
+    let res: Option<User> = users::table
+        .filter(users::email.eq(&user_form.email))
+        .first(conn)
+        .optional().map_err(|_| ApiError::InternalError)?;
+    if res.is_some() {
+        Err(ApiError::RegistrationError.into())
+    } else {
+        let ret = diesel::insert_into(users::table)
         .values((
             users::email.eq(&user_form.email),
-            users::passwd_hash.eq(&hash(&user_form.password, DEFAULT_COST)?),
+            users::passwd_hash.eq(&hash(&user_form.password, DEFAULT_COST).map_err(|_| ApiError::InternalError)?),
             // users::role_id.eq(query_role_id)
         ))
         .returning(User::as_returning())
-        .get_result(conn)?;
-    Ok(ret)
+        .get_result(conn).map_err(|_| ApiError::InternalError)?;
+        std::prelude::rust_2021::Ok(ret)
+    }
 }
+
 
 pub fn get_all_roles_db(conn: &mut PgConnection) -> Result<Vec<Role>> {
     let ret = roles::table
@@ -51,6 +61,7 @@ pub fn get_users_db(id: Option<i32>, amount: i64, conn: &mut PgConnection) -> Re
     Ok(res)
 }
 
+
 pub fn update_users_db(users_vec: Vec<UserUpdate>,conn: &mut PgConnection) -> Result<(),anyhow::Error> {
     let roles = get_all_roles_db(conn)?;
     let users_vec = users_vec.iter().map(|x| (x,roles.iter().find_or_first(|y| x.role==y.name)))
@@ -60,7 +71,7 @@ pub fn update_users_db(users_vec: Vec<UserUpdate>,conn: &mut PgConnection) -> Re
         diesel::update(users::table)
             .set(users::role_id.eq(user.1))
             .filter(users::role_id.eq(user.0))
-            .execute(conn);
+            .execute(conn)?;
     }
     Ok(())
 }
