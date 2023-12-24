@@ -35,6 +35,14 @@
     height: 100%;
 }
 
+.news-image {
+    display: grid;
+    margin-left: auto;
+    margin-right: auto;
+    width: 60%;
+    max-height: 30vw;
+}
+
 .news-date {
     text-align: end;
     padding-right: 2vw;

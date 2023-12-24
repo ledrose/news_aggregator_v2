@@ -26,7 +26,8 @@ CREATE TABLE news (
     source_id INTEGER NOT NULL REFERENCES sources(id),
     theme_id INTEGER NOT NULL REFERENCES sourceThemes(id) DEFAULT 1,
     description VARCHAR,
-    link VARCHAR NOT NULL
+    link VARCHAR NOT NULL,
+    image VARCHAR
 );
 
 INSERT INTO themes VALUES (1,'Другое');

@@ -11,6 +11,7 @@ impl NewsInsert {
             theme_source: value.categories[0].name.clone(),
             link: value.link.clone().unwrap_or("Has no link".to_string()),
             description: value.description.to_owned(),
+            image: value.enclosure.clone().map(|x| x.url),
             date_time: DateTime::parse_from_rfc2822(value.pub_date.as_ref()
                     .unwrap_or(&String::from("")).as_str()
                 ).unwrap_or_default().into(),

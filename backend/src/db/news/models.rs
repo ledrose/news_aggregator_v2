@@ -18,7 +18,8 @@ pub struct NewEntry {
     pub source_id: i32,
     pub theme_id: i32,
     pub description: Option<String>,
-    pub link: String
+    pub link: String,
+    pub image: Option<String>
 }
 
 #[derive(Selectable, AsChangeset, Identifiable, Queryable,Debug,Serialize,Deserialize,PartialEq,Eq,Hash)]
@@ -98,7 +99,8 @@ pub struct NewsFull {
     pub source: String,
     pub theme: String,
     pub description: Option<String>,
-    pub link: String
+    pub link: String,
+    pub image: Option<String>,
 }
 
 #[derive(Debug,Serialize,Deserialize,PartialEq, Eq,Hash)]
@@ -108,7 +110,8 @@ pub struct NewsInsert {
     pub source_id: i32,
     pub theme_source: String,
     pub description: Option<String>,
-    pub link: String
+    pub link: String,
+    pub image: Option<String>
 }
 
 impl<'a> From<(&'a NewsInsert,&'a SourceTheme)> for NewsDBInsert<'a> {
@@ -118,6 +121,7 @@ impl<'a> From<(&'a NewsInsert,&'a SourceTheme)> for NewsDBInsert<'a> {
             source_id: value.0.source_id, 
             theme_id: value.1.id, 
             link: &value.0.link,
+            image: value.0.image.as_deref(),
             description: value.0.description.as_deref()
         }
     }
@@ -132,7 +136,8 @@ pub struct NewsDBInsert<'a> {
     pub source_id: i32,
     pub theme_id: i32,
     pub description: Option<&'a str>,
-    pub link: &'a str
+    pub link: &'a str,
+    pub image: Option<&'a str>
 }
 
 impl TryFrom<(NewEntry,Option<Theme>,Option<Source>)> for NewsFull {
@@ -146,6 +151,7 @@ impl TryFrom<(NewEntry,Option<Theme>,Option<Source>)> for NewsFull {
             source: value.2.ok_or(anyhow!("Err1"))?.name, 
             theme: value.1.ok_or(anyhow!("Err2"))?.theme_name, 
             link: value.0.link,
+            image: value.0.image,
             description: value.0.description
         })
     }

@@ -9,6 +9,7 @@ diesel::table! {
         theme_id -> Int4,
         description -> Nullable<Varchar>,
         link -> Varchar,
+        image -> Nullable<Varchar>,
     }
 }
 

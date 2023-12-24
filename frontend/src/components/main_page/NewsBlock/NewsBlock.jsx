@@ -40,11 +40,11 @@ function BlockWithPicture({news_info}) {
                 <h1 className="news-header">{news_info.header}</h1>
             </Col>
             <Col md="6">
-                <img src={news_info.image}></img>
+                <img className="news-image" src={news_info.image}></img>
             </Col>
         </Row>
         <Row className="justify-content-center">
-            <Col md="12">
+            <Col md="11">
             <p className="news-description">{news_info.description}</p>
             </Col>
         </Row>
