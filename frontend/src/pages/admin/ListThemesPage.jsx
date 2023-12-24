@@ -75,10 +75,10 @@ export default function ListThemesPage() {
             <Table striped bordered hover>
                 <thead>
                     <tr>
-                        <th className="col-1">#</th>
-                        <th>Название</th>
-                        <th>Источник</th>
-                        <th>Отображаемая тема</th>
+                        <th className="col-2">#</th>
+                        <th className="col-3">Название</th>
+                        <th className="col-3">Источник</th>
+                        <th className="col-4">Отображаемая тема</th>
                     </tr>
                 </thead>
                 <tbody>

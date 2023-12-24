@@ -93,20 +93,24 @@ pub fn delete_sources_db(source_ids: Vec<i32>, conn: &mut PgConnection) -> Resul
 }
 
 pub fn update_source_themes_db(data: Vec<SourceThemePatch>, conn: &mut PgConnection) -> Result<(),anyhow::Error> {
-    let themes_names: Vec<&String> = data.iter().map(|x| &x.theme).collect();
+    let themes_names: Vec<&String> = data.iter().map(|x| &x.theme).unique().collect();
+    // println!("Темы: {:?}",themes_names);
     let mut themes: Vec<Theme> = themes::table
         .filter(themes::theme_name.eq_any(themes_names))
         .select(Theme::as_select())
         .get_results::<Theme>(conn)?;
+    // println!("Темы из таблицы: {:?}",themes);
     let not_existant_themes: Vec<ThemeInsert> = data.iter()
         .filter(|x| !themes.iter().any(|y| x.theme==y.theme_name))
-        .cloned().map(|x| x.theme.into()).collect_vec();
+        .cloned().map(|x| x.theme).unique().map(|x| x.into()).collect_vec();
+    // println!("Не сущ темы: {:?}",not_existant_themes);
     if !not_existant_themes.is_empty() {
         let mut another = insert_into(themes::table)
             .values(not_existant_themes)
             .returning(Theme::as_returning())
             .get_results(conn)?;
         themes.append(&mut another);
+        // println!("Темы обновленные: {:?}",themes);
     }
     let ids_vec = data.iter()
         .map(|x| (x,themes.iter().find_or_first(|theme| theme.theme_name==x.theme)))
