@@ -9,9 +9,12 @@
     border-color: #0d6efd !important;
 }
 
-.dropdown-menu {
+.col-query > .dropdown-menu {
     width: 30vw !important;
     margin-left: -14vw !important;
+}
+
+.dropdown-menu {
     background-color: var(--primary-color) !important;
 }
 

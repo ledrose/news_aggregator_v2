@@ -20,7 +20,7 @@ export default function NavBar({passHeaderHeight,reset}) {
                         <Navbar.Brand href='/'>NewsRss</Navbar.Brand>
                     </Col>
                     <Col md="1" className='offset-md-8'>
-                        <NavDropdown title="Поиск" drop='down-centered'>
+                        <NavDropdown className='col-query' title="Поиск" drop='down-centered'>
                             <div className='border-search'>
                             {/* <NavDropdown.Item> */}
                                 <QueryBlock reset={reset} dispatchQuery={()=>{}}/>

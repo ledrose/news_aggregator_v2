@@ -28,7 +28,7 @@ export default function ListThemesPage() {
         }
     });
     const [,,,updateRequest] = useCustomFetch(update_themes_api,()=>{
-        sendRequest(firstId,amount_on_page);
+        sendRequest(firstId-amount_on_page,amount_on_page);
         sendOptionsRequest();
     })
     const update_all = () => {

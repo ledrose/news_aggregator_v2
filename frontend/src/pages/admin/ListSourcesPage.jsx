@@ -22,7 +22,7 @@ export default function ListSourcesPage() {
         }
     });
     const [,,,updateRequest] = useCustomFetch(update_source_api,()=>{
-        sendRequest(firstId,amount_on_page);
+        sendRequest(firstId-amount_on_page,amount_on_page);
     })
     const update_all = () => {
         const toSend = [...sourcesChanged.values()].filter((el) => el.changed!=null);

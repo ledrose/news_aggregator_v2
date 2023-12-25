@@ -1,5 +1,5 @@
 use actix_session::SessionExt;
-use actix_web::{Scope, guard::{self, GuardContext, Guard}, web::{self, Data, Json, Query, route}, post, Responder, HttpResponse, get, dev::Service, patch};use itertools::Itertools;
+use actix_web::{Scope, guard::{self, GuardContext, Guard}, web::{self, Data, Json, Query, route}, post, Responder, HttpResponse, get, dev::Service, patch, Error};use itertools::Itertools;
 use serde_json::json;
 
 use crate::{db::{user::user::{get_source_themes, get_users_db, get_all_roles_db, update_users_db, delete_users_db}, DBPool, news::news::{get_sources_db, update_sources_db, insert_sources_db, delete_sources_db, update_source_themes_db}}, error::ApiError, api::models::{PaginateData, SourceThemesResp, SourceThemePatch, UsersPatch}};
@@ -73,12 +73,18 @@ pub async fn patch_sources(pool: Data<DBPool>,data: Json<Vec<SourcesPatch>>) -> 
         let to_update = data.0.clone().into_iter().filter(|x| x.changed.as_ref().is_some_and(|y| y=="Updated")).map(|x| x.into()).collect_vec();
         let to_add = data.0.clone().into_iter().filter(|x| x.changed.as_ref().is_some_and(|y| y=="Added")).map(|x| x.into()).collect_vec();
         let to_delete = data.0.clone().into_iter().filter(|x| x.changed.as_ref().is_some_and(|y| y=="Deleted")).map(|x| x.id).collect_vec();
-        update_sources_db(to_update, &mut conn)?;
-        insert_sources_db(to_add, &mut conn)?;
-        delete_sources_db(to_delete, &mut conn)
-        // get_sources_db(query.id, query.amount, &mut conn)
+        if !to_update.is_empty() {
+            update_sources_db(to_update, &mut conn)?;
+        }
+        if !to_add.is_empty() {
+            insert_sources_db(to_add, &mut conn)?;
+        }
+        if !to_delete.is_empty() {
+            delete_sources_db(to_delete, &mut conn)?;
+        }
+        return Ok(())
     }).await?
-        .map_err(|_| ApiError::InternalError)?;
+        .map_err(|_: anyhow::Error| ApiError::InternalError)?;
     Ok(HttpResponse::Ok().json(json!({"success":"sucess"})))
 }
 
@@ -112,10 +118,15 @@ pub async fn patch_users(pool: Data<DBPool>,data: Json<Vec<UsersPatch>>) -> acti
         let mut conn = pool.get()?;
         let to_update = data.0.clone().into_iter().filter(|x| x.changed.as_ref().is_some_and(|y| y=="Updated")).map(|x| x.into()).collect_vec();
         let to_delete = data.0.into_iter().filter(|x| x.changed.as_ref().is_some_and(|y| y=="Deleted")).map(|x| x.id).collect_vec();
-        update_users_db(to_update, &mut conn)?;
-        delete_users_db(to_delete, &mut conn)
+        if !to_update.is_empty() {
+            update_users_db(to_update, &mut conn)?;
+        }
+        if !to_delete.is_empty() {
+            delete_users_db(to_delete, &mut conn)?;
+        }
+        Ok(())
         // get_sources_db(query.id, query.amount, &mut conn)
     }).await?
-        .map_err(|_| ApiError::InternalError)?;
+        .map_err(|_: anyhow::Error| ApiError::InternalError)?;
     Ok(HttpResponse::Ok().json(json!({"success":"sucess"})))
 }

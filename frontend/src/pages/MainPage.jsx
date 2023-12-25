@@ -1,4 +1,3 @@
-import ErrorComponent from "../components/error_boundary";
 import fetch_news from "../components/backend_api/news";
 import NewsBlock from "../components/main_page/NewsBlock/NewsBlock";
 import { Children, useEffect, useRef, useState } from "react";

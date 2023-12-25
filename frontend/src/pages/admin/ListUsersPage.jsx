@@ -34,7 +34,7 @@ export default function ListUsersPage() {
         }   
     }
     useEffect(() => {
-        sendRequest(0,amount_on_page);
+        sendRequest(firstId-amount_on_page,amount_on_page);
         updateDataOptions()
     },[])
     const nextPage = () => {
