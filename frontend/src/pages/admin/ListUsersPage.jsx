@@ -1,7 +1,8 @@
-import { Button, Container, Table, Form } from "react-bootstrap"
+import { Button, Container, Row, Col, Table, Form } from "react-bootstrap"
 import useCustomFetch from "../../_helpers/CustomFetchHook"
 import { get_all_roles_api, get_sources_api, get_users_api, update_source_api, update_users_api } from "../../components/backend_api/admin";
 import { useEffect, useRef, useState } from "react";
+import TableLayout from "../../Layouts/TableLayout/TableLayout";
 
 
 export default function ListUsersPage() {
@@ -65,26 +66,36 @@ export default function ListUsersPage() {
     const nextDis = amount_on_page>users.size;
     const prevDis = firstId<amount_on_page;
     return (
-        <Container>
-            <Table striped bordered hover>
-                <thead>
-                    <tr>
-                        <th className="col-1">#</th>
-                        <th>Почта</th>
-                        <th>Роль</th>
-                        <th className="col-3"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {dataOptions!=null && [...usersChanged].map(([key,el]) => 
-                        <TableRow key={key} data={el} dataOptions={dataOptions} updateEl={updateOld} deleteEl={deleteOld}></TableRow>
-                    )}
-                </tbody>
-            </Table>
-            <Button disabled={prevDis} onClick={nextPage}>Prev</Button>
-            <Button disabled={nextDis} onClick={prevPage}>Next</Button>
-            <Button onClick={update_all} variant="success">Update All</Button>
-        </Container>
+        <TableLayout>
+            <Container>
+                <Table striped bordered hover>
+                    <thead>
+                        <tr>
+                            <th className="col-1">#</th>
+                            <th>Почта</th>
+                            <th>Роль</th>
+                            <th className="col-1"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {dataOptions!=null && [...usersChanged].map(([key,el]) => 
+                            <TableRow key={key} data={el} dataOptions={dataOptions} updateEl={updateOld} deleteEl={deleteOld}></TableRow>
+                        )}
+                    </tbody>
+                </Table>
+                <Row className="justify-content-between mb-2">
+                    <Col md="3">
+                        <Button className="mx-4" disabled={prevDis} onClick={nextPage}>Предыдущая страница</Button>
+                    </Col>
+                    <Col md="3">
+                        <Button className="mx-4"  disabled={nextDis} onClick={prevPage}>Следующая страница</Button>
+                    </Col>
+                    <Col md="3">
+                        <Button className="mx-4"  onClick={update_all} variant="success">Сохранить изменения</Button>
+                    </Col>
+                </Row>
+            </Container>
+        </TableLayout>
     )
 }
 

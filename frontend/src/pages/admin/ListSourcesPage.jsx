@@ -1,7 +1,8 @@
-import { Button, Container, Table, Form } from "react-bootstrap"
+import { Button, Container, Col, Table, Form, Row } from "react-bootstrap"
 import useCustomFetch from "../../_helpers/CustomFetchHook"
 import { get_sources_api, update_source_api } from "../../components/backend_api/admin";
 import { useEffect, useRef, useState } from "react";
+import TableLayout from "../../Layouts/TableLayout/TableLayout";
 
 
 export default function ListSourcesPage() {
@@ -76,36 +77,44 @@ export default function ListSourcesPage() {
     const nextDis = amount_on_page>sources.size;
     const prevDis = firstId===1;
     return (
-        <Container>
-            <Table striped bordered hover>
-                <thead>
-                    <tr>
-                        <th className="col-1">#</th>
-                        <th>Название</th>
-                        <th>Тип</th>
-                        <th>Ссылка</th>
-                        <th className="col-3"></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {[...sourcesChanged].map(([key,el]) => 
-                        <TableRow key={key} data={el} updateEl={updateOld} deleteEl={deleteOld}></TableRow>
-                    )}
-                </tbody>
-            </Table>
-            <Button disabled={prevDis} onClick={nextPage}>Prev</Button>
-            <Button disabled={nextDis} onClick={prevPage}>Next</Button>
-            <Button onClick={addNew} variant="success">Add New</Button>
-            <Button onClick={update_all} variant="success">Update All</Button>
-        </Container>
+        <TableLayout>
+            <Container>
+                <Table striped bordered hover>
+                    <thead>
+                        <tr>
+                            <th className="col-1">#</th>
+                            <th>Название</th>
+                            <th>Тип</th>
+                            <th>Ссылка</th>
+                            <th className="col-1"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {[...sourcesChanged].map(([key,el]) => 
+                            <TableRow key={key} data={el} updateEl={updateOld} deleteEl={deleteOld}></TableRow>
+                        )}
+                    </tbody>
+                </Table>
+                <Row className="justify-content-between mb-2">
+                    <Col md="3">
+                        <Button className="mx-4" disabled={prevDis} onClick={nextPage}>Предыдущая страница</Button>
+                    </Col>
+                    <Col md="3">
+                        <Button className="mx-4"  disabled={nextDis} onClick={prevPage}>Следующая страница</Button>
+                    </Col>
+                    <Col md="2">
+                        <Button className="mx-2" onClick={addNew} variant="success">Добавить строку</Button>
+                    </Col>
+                    <Col md="3">
+                        <Button className="mx-4"  onClick={update_all} variant="success">Сохранить изменения</Button>
+                    </Col>
+                </Row>
+            </Container>
+        </TableLayout>
     )
 }
 
 function TableRow({data,updateEl,deleteEl}) {
-    // console.log(data)
-    // const defaultData = data[1];
-    // console.log(data);
-    // console.log(nameRef.current);
     const marker = data.changed!=null?data.changed:"";
     return (
         <tr>
@@ -118,7 +127,7 @@ function TableRow({data,updateEl,deleteEl}) {
                 <input onChange={(ev)=>updateEl(data.id,"link",ev)} className="form-control" defaultValue={data.link}/>
             </td>
             <td>
-                <Button onClick={()=> deleteEl(data.id)} variant="danger">Delete</Button>
+                <Button onClick={()=> deleteEl(data.id)} variant="danger">Удалить</Button>
             </td>
         </tr>
     );

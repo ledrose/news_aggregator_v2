@@ -12,27 +12,11 @@ export default function RegisterForm() {
     const {register, handleSubmit, formState: {errors}} = useForm();
     const [isLoading,data,err,sendRequest] = useCustomFetch(register_api,(data)=>{
         console.log({email:data.email,role:data.role});
-        // reset();
         dispatch(setUser({email:data.email,role:data.role}));
         navigate("/");
     });
-    const validatePasword = () => {
-
-    }
     const onSubmit = (data) => {
-        console.log(data);
         sendRequest(data.email,data.password);
-        // e.preventDefault()
-        // const target = e.target;
-        // const email = target.email.value;
-        // const password = target.password.value;
-        // const password_rep = target.password_repeat.value;
-        // if (target.checkValidity() === false) {
-        //     e.stopPropagation();
-        // }  else {
-        //     sendRequest(email,password);
-        // }
-        // setValidated(true);
     }
     return <>
         <Form onSubmit={handleSubmit(onSubmit)}>

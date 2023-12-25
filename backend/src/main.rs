@@ -32,7 +32,7 @@ async fn main() -> std::io::Result<()> {
                     .cookie_content_security(actix_session::config::CookieContentSecurity::Private)
                     .session_lifecycle(
                         PersistentSession::default()
-                            .session_ttl(actix_web::cookie::time::Duration::minutes(10))
+                            .session_ttl(actix_web::cookie::time::Duration::days(1))
                     )
                     .cookie_same_site(actix_web::cookie::SameSite::None)
                     .build()

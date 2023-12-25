@@ -1,15 +1,12 @@
 import { Col,Row,Container } from "react-bootstrap"
 import LoginForm from "../../components/user/login_form"
 import "./LoginPage.css";
+import ScrollLayout from "../../Layouts/ScrollLayout/ScrollLayout";
+import StaticLayout from "../../Layouts/StaticLayout/StaticLayout";
 export default function LoginPage() {
-    
-    return <Container fluid className="main-container" >
-        <Row className="login-form" style={{minHeight:"100vh"}}>
-            <Col md="4" className="main-column login-form-column" >
-                <LoginForm/>
-            </Col>                
-        </Row>
-    </Container>
+    return <StaticLayout>
+        <LoginForm/>
+    </StaticLayout>
 }
 
 

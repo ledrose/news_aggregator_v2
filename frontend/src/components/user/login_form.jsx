@@ -21,7 +21,6 @@ export default function LoginForm() {
     const onSubmit = (data) => {
         sendRequest(data.email,data.password)
     }
-
     return <>
         <Form onSubmit={handleSubmit(onSubmit)}>
             <Form.Group controlId="formEmail">
@@ -43,9 +42,7 @@ export default function LoginForm() {
                     </Button>
                 </Col>
                 <Col sm="4">
-                    <Button variant="primary" type="submit">
-                        Зарегистрироваться
-                    </Button>
+                    <Link className="btn btn-primary" to={"/register"}>Зарегистрироваться</Link>
                 </Col>
             </Row>
         </Form>

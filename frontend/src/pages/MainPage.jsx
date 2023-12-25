@@ -7,6 +7,7 @@ import { Col, Row, Spinner, Container } from "react-bootstrap";
 import {reducer, QueryBlock} from "../components/main_page/QuerySettings/QuerySettings";
 import { useReducer } from "react";
 import useInViewport from "../_helpers/UseInViewport";
+import ScrollLayout from "../Layouts/ScrollLayout/ScrollLayout";
 
 const defaultQuery = {
     query: "",
@@ -16,16 +17,6 @@ const defaultQuery = {
     remove_themes: [],
 }
 
-function ScrollLayout({children}) {
-    return <Container fluid className="main-container" style={{minHeight:"100vh"}}>
-    <Row className="justify-content-center" style={{minHeight:"100vh"}}>
-        <Col md="8" className="main-column">
-            {children}
-        </Col>                
-    </Row>
-</Container>
-
-}
 
 export default function MainPage() {
     const load_at_once = 15
