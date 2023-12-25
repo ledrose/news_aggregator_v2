@@ -1,6 +1,7 @@
 import {configureStore} from "@reduxjs/toolkit";
 import errorReducer from "./errorSlice";
 import userReducer from "./userSlice";
+import queryReducer from "./querySlice";
 import storage from "redux-persist/lib/storage"
 import {persistStore, persistReducer} from "redux-persist";
 import { thunk } from "redux-thunk";
@@ -10,12 +11,13 @@ const persistConfig = {
     storage
 }
 
-const persistedReducer = persistReducer(persistConfig,userReducer)
+const persistedUserReducer = persistReducer(persistConfig,userReducer)
 
 const store =  configureStore({
     reducer: {
         error: errorReducer,
-        user: persistedReducer,
+        user: persistedUserReducer,
+        query: queryReducer,
     },
     middleware: () => [thunk]
 })

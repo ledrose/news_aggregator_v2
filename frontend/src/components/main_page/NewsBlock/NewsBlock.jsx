@@ -23,6 +23,7 @@ export default function NewsBlock({news_info}) {
     </div>
 }
 
+
 function MainBlock({news_info}) {
     if (news_info.image!=undefined && news_info.image!=null) {
         return <BlockWithPicture news_info={news_info}/>

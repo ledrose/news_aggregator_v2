@@ -8,3 +8,15 @@
     background-color: #0d6efd !important;
     border-color: #0d6efd !important;
 }
+
+.dropdown-menu {
+    width: 30vw !important;
+    margin-left: -14vw !important;
+    background-color: var(--primary-color) !important;
+}
+
+.border-search {
+    border: 3px solid !important;
+    padding: 5%!important;
+    border-color: var(--primary-color) !important;
+}

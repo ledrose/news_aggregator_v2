@@ -1,6 +1,6 @@
 import Container from 'react-bootstrap/Container';
 import Navbar from 'react-bootstrap/Navbar';
-import { Button, Col, Row, Nav, NavDropdown } from 'react-bootstrap';
+import { Button, Col, Row, Nav, NavDropdown, Form } from 'react-bootstrap';
 import { logout_api } from '../../backend_api/login';
 import usePersistentState from '../../../_helpers/UsePersistent';
 import useCustomFetch from '../../../_helpers/CustomFetchHook';
@@ -8,7 +8,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { reset, setUser } from '../../../_store/userSlice';
 import { Link } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
-export default function NavBar({passHeaderHeight}) {
+import { QueryBlock } from '../../main_page/QuerySettings/QuerySettings';
+import "./NavBar.css";
+export default function NavBar({passHeaderHeight,reset}) {
     const headerRef = useRef(null);
     useEffect(()=>passHeaderHeight(headerRef.current.offsetHeight),[]);
     return (
@@ -16,6 +18,15 @@ export default function NavBar({passHeaderHeight}) {
             <Container fluid>
                     <Col md="2">
                         <Navbar.Brand href='/'>NewsRss</Navbar.Brand>
+                    </Col>
+                    <Col md="1" className='offset-md-8'>
+                        <NavDropdown title="Поиск" drop='down-centered'>
+                            <div className='border-search'>
+                            {/* <NavDropdown.Item> */}
+                                <QueryBlock reset={reset} dispatchQuery={()=>{}}/>
+                            {/* </NavDropdown.Item> */}
+                            </div>
+                        </NavDropdown>
                     </Col>
                     <Col md="1">  
                         <Navbar.Collapse id='navbar-colapse-login'>

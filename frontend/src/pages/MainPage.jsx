@@ -4,27 +4,21 @@ import NewsBlock from "../components/main_page/NewsBlock/NewsBlock";
 import { Children, useEffect, useRef, useState } from "react";
 import useCustomFetch from "../_helpers/CustomFetchHook";
 import { Col, Row, Spinner, Container } from "react-bootstrap";
-import {reducer, QueryBlock} from "../components/main_page/QuerySettings/QuerySettings";
-import { useReducer } from "react";
+import { useSelector } from "react-redux";
 import useInViewport from "../_helpers/UseInViewport";
 import ScrollLayout from "../Layouts/ScrollLayout/ScrollLayout";
-
-const defaultQuery = {
-    query: "",
-    add_source: [],
-    remove_source: [],
-    add_themes: [],
-    remove_themes: [],
-}
+import { useOutletContext } from "react-router-dom";
 
 
 export default function MainPage() {
     const load_at_once = 15
+    const context = useOutletContext();
+    const [queryUpdate,setQueryUpdate] = context.queryHook;
     const [data,setData] = useState([]);
     const divRef = useRef(null);
     const isInViewport = useInViewport(divRef);
     const [loadNext,setLoadNext] = useState(true);
-    const [query,dispatchQuery] = useReducer(reducer,defaultQuery);
+    const query =  useSelector((state) => state.query);
     const [dateOffset,setDateOffset] = useState(undefined);
     const [isLoading, resp ,error, sendRequest] = useCustomFetch(fetch_news,
         (newData) => {
@@ -43,18 +37,14 @@ export default function MainPage() {
         if (isInViewport && !isLoading && loadNext) {
             sendRequest(dateOffset,load_at_once,query);
         }
-    },[isInViewport,loadNext])
-    const reset = () => {
+    },[isInViewport,loadNext]);
+    useEffect(() => {
+        setQueryUpdate(false);
         setData([]);
         setLoadNext(true);
         setDateOffset(undefined);
-    }
+    },[queryUpdate])
     return <ScrollLayout>
-        <Row className="justify-content-center">
-            <Col md="4">
-                <QueryBlock dispatchQuery={dispatchQuery} reset={reset}/>
-            </Col>
-        </Row>
         {data.length>0 && data?.map((el)=> 
             <div key={el.id}>   
                 <NewsBlock news_info={el}/>
@@ -64,7 +54,7 @@ export default function MainPage() {
             <SpinnerLoad/>
         }
         {!loadNext &&
-            <p>Scroll Ended</p>
+            <NewsNotFound/>
         }
         <div ref={divRef}></div>
     </ScrollLayout>
@@ -77,4 +67,14 @@ function SpinnerLoad() {
             <span className="visually-hidden">Loading...</span>
         </Spinner>
     );
+}
+
+function NewsNotFound() {
+    return <div className="main-news-div">
+        <Row className="justify-content-around">
+            <Col md="6">
+                <p className="news-theme">Новости не найдены</p>
+            </Col>
+        </Row>
+    </div>
 }
