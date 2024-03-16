@@ -1,6 +1,6 @@
 use bcrypt::{DEFAULT_COST, hash, verify};
 use diesel::{PgConnection, SelectableHelper, QueryDsl, RunQueryDsl, ExpressionMethods};
-use anyhow::{Result, Ok, anyhow};
+use anyhow::{Result, Ok};
 use itertools::Itertools;
 
 use crate::{error::ApiError, schema::{roles, users, sourcethemes, sources, themes}, db::news::models::{SourceTheme, Source, Theme}};
@@ -28,7 +28,7 @@ pub fn add_user_inter(user_form: &UserRegister, conn: &mut PgConnection) -> Resu
         .first(conn)
         .optional().map_err(|_| ApiError::InternalError)?;
     if res.is_some() {
-        Err(ApiError::RegistrationError.into())
+        Err(ApiError::RegistrationError)
     } else {
         let ret = diesel::insert_into(users::table)
         .values((

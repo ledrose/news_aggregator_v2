@@ -1,7 +1,6 @@
 use actix_web::{Scope, Responder, web::{Data, Json, self}, post, HttpResponse, get};
 use anyhow::Error;
 use itertools::Itertools;
-use serde::{Serialize, Deserialize};
 
 use crate::{db::{DBPool, news::{news::{get_news, add_news_db, get_all_themes_db}, models::NewsInsert}, user::user::get_sources}, error, api::models::NewsBatchInfo};
 

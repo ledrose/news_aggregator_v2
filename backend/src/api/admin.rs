@@ -1,5 +1,5 @@
 use actix_session::SessionExt;
-use actix_web::{Scope, guard::{self, GuardContext, Guard}, web::{self, Data, Json, Query, route}, post, Responder, HttpResponse, get, dev::Service, patch, Error};use itertools::Itertools;
+use actix_web::{Scope, guard::GuardContext, web::{self, Data, Json, Query}, Responder, HttpResponse, get, patch};use itertools::Itertools;
 use serde_json::json;
 
 use crate::{db::{user::user::{get_source_themes, get_users_db, get_all_roles_db, update_users_db, delete_users_db}, DBPool, news::news::{get_sources_db, update_sources_db, insert_sources_db, delete_sources_db, update_source_themes_db}}, error::ApiError, api::models::{PaginateData, SourceThemesResp, SourceThemePatch, UsersPatch}};
@@ -82,7 +82,7 @@ pub async fn patch_sources(pool: Data<DBPool>,data: Json<Vec<SourcesPatch>>) -> 
         if !to_delete.is_empty() {
             delete_sources_db(to_delete, &mut conn)?;
         }
-        return Ok(())
+        Ok(())
     }).await?
         .map_err(|_: anyhow::Error| ApiError::InternalError)?;
     Ok(HttpResponse::Ok().json(json!({"success":"sucess"})))

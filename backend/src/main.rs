@@ -1,12 +1,14 @@
+#![warn(clippy::pedantic)]
+
 use std::time::Duration;
 
 use actix_cors::Cors;
 use actix_rt::time;
-use actix_session::{SessionMiddleware, storage::CookieSessionStore, Session, config::PersistentSession};
-use actix_web::{web::{self, Data, Json}, App, HttpServer, Responder, get, HttpResponse, middleware::{Logger, Compress, self}, cookie::Key};
+use actix_session::{SessionMiddleware, storage::CookieSessionStore, config::PersistentSession};
+use actix_web::{web, App, HttpServer, middleware::{Logger, Compress}, cookie::Key};
 
 use env_logger::Env;
-use rust_news_aggregator_v2::{self, db::{establish_connection, DBPool, run_migrations}, api::{auth, self}, background_jobs::start_background_tasks};
+use rust_news_aggregator_v2::{self, db::{establish_connection, run_migrations}, api, background_jobs::start_background_tasks};
 
 
 #[actix_web::main]

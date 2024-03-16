@@ -1,7 +1,5 @@
-use actix_jwt_auth_middleware::{FromRequest, Authority, TokenSigner};
 use actix_session::Session;
-use actix_web::{post, web::{Data, Json, self, Form}, Responder, HttpResponse, Scope, get};
-use serde::{Serialize, Deserialize};
+use actix_web::{post, web::{Data, Json, self}, Responder, HttpResponse, Scope, get};
 use serde_json::json;
 use crate::{db::{DBPool, user::{models::*, user::*}}, error::ApiError};
 

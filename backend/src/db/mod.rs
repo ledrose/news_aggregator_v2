@@ -1,6 +1,6 @@
 pub mod user;
 pub mod news;
-use diesel::{PgConnection, r2d2::{ConnectionManager, self}, pg::Pg};
+use diesel::{PgConnection, r2d2::{ConnectionManager, self}};
 use diesel_migrations::{EmbeddedMigrations, embed_migrations, MigrationHarness};
 use dotenv::dotenv;
 use anyhow::{Result,Ok};

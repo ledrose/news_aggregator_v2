@@ -1,4 +1,4 @@
-use actix_web::{web::{ServiceConfig, self}, Scope, HttpResponse};
+use actix_web::Scope;
 
 
 pub mod auth;
