@@ -1,132 +1,102 @@
-use actix_session::SessionExt;
-use actix_web::{Scope, guard::GuardContext, web::{self, Data, Json, Query}, Responder, HttpResponse, get, patch};use itertools::Itertools;
-use serde_json::json;
+use std::sync::Arc;
 
-use crate::{db::{user::user::{get_source_themes, get_users_db, get_all_roles_db, update_users_db, delete_users_db}, DBPool, news::news::{get_sources_db, update_sources_db, insert_sources_db, delete_sources_db, update_source_themes_db}}, error::ApiError, api::models::{PaginateData, SourceThemesResp, SourceThemePatch, UsersPatch}};
+use axum::{extract::{Query, State}, response::IntoResponse, routing::{get,patch}, Json, Router};
+use serde_json::json;
+use itertools::Itertools;
+use crate::{api::models::{PaginateData, SourceThemePatch, SourceThemesResp, UsersPatch}, db::{news::news::{delete_sources_db, get_sources_db, insert_sources_db, update_source_themes_db, update_sources_db}, user::user::{delete_users_db, get_all_roles_db, get_source_themes, get_users_db, update_users_db}}, error::ApiError, setup::AppState};
 
 use super::models::{UserAnswer, SourcesPatch};
 
-
-pub fn admin_scope() -> Scope {
-    web::scope("/admin")
-        .service(get_sources)
-        .service(patch_sources)
-        .service(get_themes)
-        .service(patch_themes)
-        .service(get_users)
-        .service(get_all_roles)
-        .service(patch_users)
-        .default_service(web::route().to(not_authorized_route))
+// /admin
+pub fn admin_router() -> Router<Arc<AppState>> {
+    Router::new()
+        .route("/users", get(get_users).patch(patch_users))
+        .route("/sources",get(get_sources).patch(patch_sources))
+        .route("/themes",get(get_themes).patch(patch_themes))
+        .route("/roles",get(get_all_roles))
 }
 
-pub async fn not_authorized_route() -> impl Responder {
-    HttpResponse::Unauthorized().reason("Admin priveleges required").finish()
-}
 
-fn admin_guard(ctx: &GuardContext<'_>) -> bool {
-    if let Ok(Some(role)) = ctx.get_session().get::<String>("role") {
-        if role == "admin" {
-            println!("GuardCheck True");
-            return true;
-        }
-    }
-    false
-}
-
-#[get("/users",guard="admin_guard")]
-pub async fn get_users(pool: Data<DBPool>,query: Query<PaginateData>) -> actix_web::Result<impl Responder> {
-    let user_list = web::block(move || {
-        let mut conn = pool.get()?;
-        get_users_db(query.id0,query.amount,&mut conn)
-    }).await?
-        .map_err(|_| ApiError::InternalError)?;
+pub async fn get_users(State(state): State<Arc<AppState>>,Query(query): Query<PaginateData>) -> Result<impl IntoResponse,ApiError> {
+    let conn = &state.db.get().await.unwrap();
+    let user_list = conn.interact(move |conn| {
+        get_users_db(query.id0,query.amount,conn)
+    }).await??;
     let user_answer: Vec<UserAnswer> = user_list.into_iter().map(|x| x.into()).collect();
-    Ok(HttpResponse::Ok().json(user_answer))
+    Ok(Json(user_answer))
 }
 
-#[get("/roles",guard="admin_guard")]
-pub async fn get_all_roles(pool: Data<DBPool>) -> actix_web::Result<impl Responder> {
-    let roles = web::block(move || {
-        let mut conn = pool.get()?;
-        get_all_roles_db(&mut conn)
-    }).await?
-        .map_err(|_| ApiError::InternalError)?;
-    Ok(HttpResponse::Ok().json(roles))
+pub async fn get_all_roles(State(state): State<Arc<AppState>>) -> Result<impl IntoResponse,ApiError> {
+    let conn = &state.db.get().await.unwrap();
+    let roles = conn.interact(move |conn| {
+        get_all_roles_db(conn)
+    }).await??;
+    Ok(Json(roles))
 }
 
 
-#[get("/sources",guard="admin_guard")]
-pub async fn get_sources(pool: Data<DBPool>, query: Query<PaginateData>) -> actix_web::Result<impl Responder> {
-    let source_list = web::block(move || {
-        let mut conn = pool.get()?;
-        get_sources_db(query.id0, query.amount, &mut conn)
-    }).await?
-        .map_err(|_| ApiError::InternalError)?;
-    Ok(HttpResponse::Ok().json(source_list))
+pub async fn get_sources(State(state): State<Arc<AppState>>,Query(query): Query<PaginateData>) -> Result<impl IntoResponse,ApiError> {
+    let conn = &state.db.get().await.unwrap();
+    let source_list = conn.interact(move |conn| {
+        get_sources_db(query.id0, query.amount, conn)
+    }).await??;
+    Ok(Json(source_list))
 }
 
-#[patch("/sources",guard="admin_guard")]
-pub async fn patch_sources(pool: Data<DBPool>,data: Json<Vec<SourcesPatch>>) -> actix_web::Result<impl Responder> {
+pub async fn patch_sources(State(state): State<Arc<AppState>>,Json(data): Json<Vec<SourcesPatch>>) -> Result<impl IntoResponse,ApiError> {
     println!("{data:?}");
-    web::block(move || {
-        let mut conn = pool.get()?;
-        let to_update = data.0.clone().into_iter().filter(|x| x.changed.as_ref().is_some_and(|y| y=="Updated")).map(|x| x.into()).collect_vec();
-        let to_add = data.0.clone().into_iter().filter(|x| x.changed.as_ref().is_some_and(|y| y=="Added")).map(|x| x.into()).collect_vec();
-        let to_delete = data.0.clone().into_iter().filter(|x| x.changed.as_ref().is_some_and(|y| y=="Deleted")).map(|x| x.id).collect_vec();
+    let conn = &state.db.get().await.unwrap();
+    conn.interact( move |conn| {
+        let to_update = data.clone().into_iter().filter(|x| x.changed.as_ref().is_some_and(|y| y=="Updated")).map(|x| x.into()).collect_vec();
+        let to_add = data.clone().into_iter().filter(|x| x.changed.as_ref().is_some_and(|y| y=="Added")).map(|x| x.into()).collect_vec();
+        let to_delete = data.clone().into_iter().filter(|x| x.changed.as_ref().is_some_and(|y| y=="Deleted")).map(|x| x.id).collect_vec();
         if !to_update.is_empty() {
-            update_sources_db(to_update, &mut conn)?;
+            update_sources_db(to_update, conn)?;
         }
         if !to_add.is_empty() {
-            insert_sources_db(to_add, &mut conn)?;
+            insert_sources_db(to_add, conn)?;
         }
         if !to_delete.is_empty() {
-            delete_sources_db(to_delete, &mut conn)?;
+            delete_sources_db(to_delete, conn)?;
         }
-        Ok(())
-    }).await?
-        .map_err(|_: anyhow::Error| ApiError::InternalError)?;
-    Ok(HttpResponse::Ok().json(json!({"success":"sucess"})))
+        Ok::<(),anyhow::Error>(())
+    }).await??;
+    Ok(Json(json!({"success":"sucess"})))
 }
 
-#[get("/themes",guard="admin_guard")]
-pub async fn get_themes(pool: Data<DBPool>, query: Query<PaginateData>) -> actix_web::Result<impl Responder> {
-    let source_list = web::block(move || {
-        let mut conn = pool.get()?;
-        get_source_themes(query.id0, query.amount, &mut conn)
-    }).await?
-        .map_err(|_| ApiError::InternalError)?;
+pub async fn get_themes(State(state): State<Arc<AppState>>,Query(query): Query<PaginateData>) -> Result<impl IntoResponse,ApiError> {
+    let conn = &state.db.get().await.unwrap();
+    let source_list = conn.interact(move |conn| {
+        get_source_themes(query.id0, query.amount,conn)
+    }).await??;
     let source_list: Vec<SourceThemesResp> = source_list.into_iter().map(|x| x.into()).collect_vec();
-    Ok(HttpResponse::Ok().json(source_list))
+    Ok(Json(source_list))
 }
 
-#[patch("/themes",guard="admin_guard")]
-pub async fn patch_themes(pool: Data<DBPool>,data: Json<Vec<SourceThemePatch>>) -> actix_web::Result<impl Responder> {
+pub async fn patch_themes(State(state): State<Arc<AppState>>,Json(data): Json<Vec<SourceThemePatch>>) -> Result<impl IntoResponse,ApiError> {
     println!("{data:?}");
-    web::block(move || {
-        let mut conn = pool.get()?;
-        update_source_themes_db(data.0, &mut conn)
+    let conn = &state.db.get().await.unwrap();
+    conn.interact( move |conn| {
+        update_source_themes_db(data, conn)
         // get_sources_db(query.id, query.amount, &mut conn)
-    }).await?
-        .map_err(|_| ApiError::InternalError)?;
-    Ok(HttpResponse::Ok().json(json!({"success":"sucess"})))
+    }).await??;
+    Ok(Json(json!({"success":"sucess"})))
 }
 
-#[patch("/users",guard="admin_guard")]
-pub async fn patch_users(pool: Data<DBPool>,data: Json<Vec<UsersPatch>>) -> actix_web::Result<impl Responder> {
+pub async fn patch_users(State(state): State<Arc<AppState>>,Json(data): Json<Vec<UsersPatch>>) -> Result<impl IntoResponse,ApiError> {
     println!("{data:?}");
-    web::block(move || {
-        let mut conn = pool.get()?;
-        let to_update = data.0.clone().into_iter().filter(|x| x.changed.as_ref().is_some_and(|y| y=="Updated")).map(|x| x.into()).collect_vec();
-        let to_delete = data.0.into_iter().filter(|x| x.changed.as_ref().is_some_and(|y| y=="Deleted")).map(|x| x.id).collect_vec();
+    let conn = &state.db.get().await.unwrap();
+    conn.interact(move |conn| {
+        let to_update = data.clone().into_iter().filter(|x| x.changed.as_ref().is_some_and(|y| y=="Updated")).map(|x| x.into()).collect_vec();
+        let to_delete = data.into_iter().filter(|x| x.changed.as_ref().is_some_and(|y| y=="Deleted")).map(|x| x.id).collect_vec();
         if !to_update.is_empty() {
-            update_users_db(to_update, &mut conn)?;
+            update_users_db(to_update, conn)?;
         }
         if !to_delete.is_empty() {
-            delete_users_db(to_delete, &mut conn)?;
+            delete_users_db(to_delete, conn)?;
         }
-        Ok(())
+        Ok::<(),anyhow::Error>(())
         // get_sources_db(query.id, query.amount, &mut conn)
-    }).await?
-        .map_err(|_: anyhow::Error| ApiError::InternalError)?;
-    Ok(HttpResponse::Ok().json(json!({"success":"sucess"})))
+    }).await??;
+    Ok(Json(json!({"success":"sucess"})))
 }

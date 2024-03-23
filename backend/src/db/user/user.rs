@@ -1,13 +1,13 @@
+
 use bcrypt::{DEFAULT_COST, hash, verify};
 use diesel::{PgConnection, SelectableHelper, QueryDsl, RunQueryDsl, ExpressionMethods};
-use anyhow::{Result, Ok};
 use itertools::Itertools;
 
-use crate::{error::ApiError, schema::{roles, users, sourcethemes, sources, themes}, db::news::models::{SourceTheme, Source, Theme}};
+use crate::{db::news::models::{Source, SourceTheme, Theme}, error::ApiError, schema::{roles, sources, sourcethemes, themes, users}};
 
 use super::models::*;
 
-pub fn auth_inter(user_form: &UserForm, conn: &mut PgConnection) -> Result<UserWithRole> {
+pub fn auth_inter(user_form: &UserForm, conn: &mut PgConnection) -> Result<UserWithRole,anyhow::Error> {
     // use crate::schema::users::dsl::*;
     let user_db: (User,Role) = users::table
         .inner_join(roles::table)
@@ -38,19 +38,19 @@ pub fn add_user_inter(user_form: &UserRegister, conn: &mut PgConnection) -> Resu
         ))
         .returning(User::as_returning())
         .get_result(conn).map_err(|_| ApiError::InternalError)?;
-        std::prelude::rust_2021::Ok(ret)
+        Ok(ret)
     }
 }
 
 
-pub fn get_all_roles_db(conn: &mut PgConnection) -> Result<Vec<Role>> {
+pub fn get_all_roles_db(conn: &mut PgConnection) -> Result<Vec<Role>,anyhow::Error> {
     let ret = roles::table
         .select(Role::as_select())
         .get_results(conn)?;
     Ok(ret)
 }
 
-pub fn get_users_db(id: Option<i32>, amount: i64, conn: &mut PgConnection) -> Result<Vec<(User,Role)>> {
+pub fn get_users_db(id: Option<i32>, amount: i64, conn: &mut PgConnection) -> Result<Vec<(User,Role)>,anyhow::Error> {
     let id = id.unwrap_or(0);
     let res = users::table
         .inner_join(roles::table)
@@ -82,7 +82,7 @@ pub fn delete_users_db(ids: Vec<i32>,conn: &mut PgConnection) -> Result<(),anyho
     Ok(())
 }
 
-pub fn get_role_db(email: &str, conn: &mut PgConnection) -> Result<Role> {
+pub fn get_role_db(email: &str, conn: &mut PgConnection) -> Result<Role,anyhow::Error> {
     let role: Role = users::table
         .inner_join(roles::table)
         .filter(users::email.eq(email))
@@ -91,7 +91,7 @@ pub fn get_role_db(email: &str, conn: &mut PgConnection) -> Result<Role> {
     Ok(role)
 }
 
-pub fn get_source_themes(id: Option<i32>, amount: i64, conn: &mut PgConnection) -> Result<Vec<(SourceTheme,Theme,Source)>> {
+pub fn get_source_themes(id: Option<i32>, amount: i64, conn: &mut PgConnection) -> Result<Vec<(SourceTheme,Theme,Source)>,anyhow::Error> {
     let id = id.unwrap_or(0);
     let res = sourcethemes::table
         .inner_join(themes::table)
@@ -104,7 +104,7 @@ pub fn get_source_themes(id: Option<i32>, amount: i64, conn: &mut PgConnection) 
     Ok(res)
 }
 
-pub fn get_sources(id: i32,amount: i64, conn: &mut PgConnection) -> Result<Vec<Source>> {
+pub fn get_sources(id: i32,amount: i64, conn: &mut PgConnection) -> Result<Vec<Source>,anyhow::Error> {
     let res = sources::table
         .filter(sources::id.ge(id))
         .order_by(sources::id.asc())
@@ -112,30 +112,4 @@ pub fn get_sources(id: i32,amount: i64, conn: &mut PgConnection) -> Result<Vec<S
         .select(Source::as_select())
         .get_results::<Source>(conn)?;
     Ok(res)
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::db::{establish_connection, user::models::{UserRegister, UserForm}};
-
-    use super::{add_user_inter, auth_inter};
-
-    #[test]
-    fn add_user_to_db() {
-        let mut conn = establish_connection().unwrap().get().unwrap();
-        let user = UserRegister {
-            email: "1".to_string(),
-            password: "2".to_string()
-        };
-        add_user_inter(&user, &mut conn).unwrap();
-    }
-    #[test]
-    fn get_user() {
-        let mut conn = establish_connection().unwrap().get().unwrap();
-        let user = UserForm {
-            email: "1".to_string(),
-            password: "2".to_string(),
-        };
-        println!("{:?}",auth_inter(&user, &mut conn).unwrap());
-    }
 }

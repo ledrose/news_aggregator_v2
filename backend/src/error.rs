@@ -1,7 +1,13 @@
 
-use actix_web::{error, HttpResponse, http::header::ContentType};
+use axum::{http::StatusCode, response::IntoResponse, Json};
+use deadpool_diesel::InteractError;
 // use thiserror::Error;
 use derive_more::{Display, Error};
+use serde_json::json;
+
+pub trait ConvertToApiError {
+    fn convert(self) -> ApiError;
+}
 
 #[derive(Debug,Display, Error)]
 pub enum ApiError {
@@ -13,21 +19,25 @@ pub enum ApiError {
     InternalError,
     #[display(fmt="Not logged into account")]
     NotLoggedError,
+    #[display(fmt="Database interaction error")]
+    InteractError,
+}
+
+impl IntoResponse for ApiError {
+    fn into_response(self) -> axum::response::Response {
+        (StatusCode::INTERNAL_SERVER_ERROR,Json(json!({"message":format!("{}",self)}))).into_response()
+    }
 }
 
 
-
-impl error::ResponseError for ApiError {
-    fn status_code(&self) -> actix_web::http::StatusCode {
-        match &self {
-            Self::NotLoggedError|Self::LoginError => actix_web::http::StatusCode::UNAUTHORIZED,
-            _ => actix_web::http::StatusCode::INTERNAL_SERVER_ERROR
-        }
+impl From<InteractError> for ApiError {
+    fn from(value: InteractError) -> Self {
+        Self::InteractError
     }
+}
 
-    fn error_response(&self) -> HttpResponse {
-        HttpResponse::build(self.status_code())
-            .insert_header(ContentType::html())
-            .body(self.to_string())
+impl From<anyhow::Error> for ApiError {
+    fn from(value: anyhow::Error) -> Self {
+        Self::InternalError
     }
 }

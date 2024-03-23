@@ -1,19 +1,17 @@
-use actix_session::Session;
-use actix_web::{post, web::{Data, Json, self}, Responder, HttpResponse, Scope, get};
+use axum::{routing::{get, post}, Router};
 use serde_json::json;
-use crate::{db::{DBPool, user::{models::*, user::*}}, error::ApiError};
+use crate::{db::{user::{models::*, user::*}}, error::ApiError};
 
-pub fn auth_scope() -> Scope {
-    Scope::new("/auth")
-        .service(register)
-        .service(login)
-        .service(logout)
-        // .service(get_user_role)
+// /auth
+pub fn auth_router() -> Router {
+    Router::new()
+        .route("/register", post(register))
+        .route("/login",post(login))
+        .route("/logout", get(logout))
 }
 
 
 
-#[post("/register")]
 pub async fn register(pool: Data<DBPool>,user: Json<UserRegister>) -> actix_web::Result<impl Responder> {
 
     let user_db = web::block(move || {
@@ -25,7 +23,6 @@ pub async fn register(pool: Data<DBPool>,user: Json<UserRegister>) -> actix_web:
 }
 
 
-#[post("/login")]
 pub async fn login(pool: Data<DBPool>,user: Json<UserForm>,session: Session) -> actix_web::Result<impl Responder> {
     let user_db = web::block(move || {
         let mut conn = pool.get()?;
@@ -38,7 +35,6 @@ pub async fn login(pool: Data<DBPool>,user: Json<UserForm>,session: Session) -> 
     Ok(HttpResponse::Ok().json(user_db))
 }
 
-#[get("/logout")]
 pub async fn logout(session: Session) -> actix_web::Result<impl Responder> {
     session.renew();
     Ok(HttpResponse::Ok().json(json!({"answer":"ok"})))

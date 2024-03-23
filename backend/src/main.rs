@@ -1,53 +1,35 @@
-#![warn(clippy::pedantic)]
 
-use std::time::Duration;
-
-use actix_cors::Cors;
-use actix_rt::time;
-use actix_session::{SessionMiddleware, storage::CookieSessionStore, config::PersistentSession};
-use actix_web::{web, App, HttpServer, middleware::{Logger, Compress}, cookie::Key};
-
-use env_logger::Env;
-use rust_news_aggregator_v2::{self, db::{establish_connection, run_migrations}, api, background_jobs::start_background_tasks};
+use std::{sync::Arc, time::Duration};
+use axum::{http::StatusCode, response::IntoResponse, Router};
+use rust_news_aggregator_v2::{self, api::{self, api_router}, background_jobs::start_background_tasks, setup::establish_connection};
+use tokio::time;
+use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
 
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    let pg_conn = establish_connection().expect("Established connection with db");
-    env_logger::init_from_env(Env::default().default_filter_or("debug"));
-    run_migrations(&pg_conn).expect("Migrations should have been completed");
-    let public_key = Key::generate();
-    // println!("{public_key:?}");
+#[tokio::main]
+async fn main() {
+    init_tracing();
+    let state = establish_connection().await;
     let task_delay = time::interval(Duration::from_secs(60*5));
-    start_background_tasks(pg_conn.clone(),task_delay).await;
-    HttpServer::new(move || {
-        App::new()
-            .app_data(web::Data::new(pg_conn.clone()))
-            .wrap(Logger::default())
-            .wrap(Logger::new("%a %{User-Agent}i"))
-            .wrap(Compress::default())
-            // .wrap(middleware::DefaultHeaders::new().add(("Access-Control-Allow-Origin","*")))
-            .wrap(get_cors())
-            .wrap(
-                SessionMiddleware::builder(CookieSessionStore::default(), public_key.clone())
-                    .cookie_secure(false)
-                    .cookie_content_security(actix_session::config::CookieContentSecurity::Private)
-                    .session_lifecycle(
-                        PersistentSession::default()
-                            .session_ttl(actix_web::cookie::time::Duration::days(1))
-                    )
-                    .cookie_same_site(actix_web::cookie::SameSite::None)
-                    .build()
-            )
-            .service(api::api_scope())
-    })
-    .bind(("127.0.0.1", 8080))?
-    .run()
-    .await
+    start_background_tasks(state.db.clone(),task_delay).await;
+    let app = Router::new()
+        .nest("/api", api_router())
+        .fallback(err_404)
+        .layer(CorsLayer::very_permissive())
+        .layer(TraceLayer::new_for_http())
+        .with_state(Arc::new(state));
+    let addr = "127.0.0.1:8080";
+    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
+    tracing::info!("listening on {}",&addr);
+    axum::serve(listener,app).await.unwrap();
+}
+async fn err_404() -> impl IntoResponse {
+    (StatusCode::NOT_FOUND,"The requested resource was not found")
 }
 
-fn get_cors() -> Cors {
-    Cors::permissive()
-    // Cors::default().allowed_origin("http://192.168.0.4:3000/").supports_credentials()
-}
 
+fn init_tracing() {
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .init();
+}

@@ -1,5 +1,6 @@
 use anyhow::Ok;
 use chrono::DateTime;
+use deadpool_diesel::postgres::Pool;
 use rss::Channel;
 use crate::db::news::{news::{get_sources_and_last_entry_by_type, add_news_db}, models::{Source, NewsInsert}};
 
@@ -27,8 +28,9 @@ impl RssTask {
     //     time::interval(Duration::from_secs(10*60))
     // }
 
-    pub async fn update(conn: &mut diesel::prelude::PgConnection) -> Result<(),anyhow::Error> {
-        let source_info =  get_sources_and_last_entry_by_type("rss", conn)?;
+    pub async fn update(pool: &Pool) -> Result<(),anyhow::Error> {
+        let conn = pool.get().await.unwrap();
+        let source_info =  conn.interact(|conn| get_sources_and_last_entry_by_type("rss", conn)).await.unwrap()?;
         let mut news = vec![];
         for source in source_info {
             if let (Source { id, link: Some(link), .. }, entry) = &source {
@@ -49,7 +51,7 @@ impl RssTask {
                 }
             }
         }
-        let _ = add_news_db(news, conn)?;
+        let _ = conn.interact(|conn| add_news_db(news, conn)).await.unwrap();
         Ok(())
     }
 }

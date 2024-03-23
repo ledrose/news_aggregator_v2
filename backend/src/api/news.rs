@@ -1,50 +1,43 @@
-use actix_web::{Scope, Responder, web::{Data, Json, self}, post, HttpResponse, get};
-use anyhow::Error;
+use std::sync::Arc;
+
+use axum::{extract::State, http::StatusCode, response::IntoResponse, routing::{get, post}, Json, Router};
 use itertools::Itertools;
 
-use crate::{db::{DBPool, news::{news::{get_news, add_news_db, get_all_themes_db}, models::NewsInsert}, user::user::get_sources}, error, api::models::NewsBatchInfo};
+use crate::{api::models::NewsBatchInfo, db::{news::{models::NewsInsert, news::{add_news_db, get_all_themes_db, get_news}}, user::user::get_sources}, error::{self, ApiError, ConvertToApiError}, setup::AppState};
 
 use super::models::SearchOptions;
 
 
-pub fn news_scope() -> Scope {
-    Scope::new("/news")
-        .service(news)
-        .service(add_news)
-        .service(get_all_sources)
-        .default_service(web::route().to(HttpResponse::MethodNotAllowed))
+pub fn news_router() -> Router<Arc<AppState>> {
+    Router::new()
+        .route("/batch", post(news))
+        .route("/add", post(add_news))
+        .route("/search_info",get(get_all_sources))
 }
 
-#[post("/batch")]
-pub async fn news(pool: Data<DBPool>,news_batch: Json<NewsBatchInfo>) -> actix_web::Result<impl Responder> {
-    let res = web::block(move || {
-        let mut conn = pool.get()?;
-        Ok(get_news(news_batch.start_date, news_batch.amount, &news_batch.prefs, &mut conn))
-    }).await?
-    .map_err(|_: Error| error::ApiError::InternalError)?;
-    // log::debug!("{res:?}");
-    Ok(HttpResponse::Ok().json(res))
+pub async fn news(State(state): State<Arc<AppState>>,Json(news_batch): Json<NewsBatchInfo>) -> Result<impl IntoResponse,ApiError> {
+    let conn = &state.db.get().await.unwrap();
+    let res = conn.interact(move |conn| {
+        get_news(news_batch.start_date, news_batch.amount, &news_batch.prefs, conn)
+    }).await?;
+    Ok(Json(res))
 }
 
-#[post("/add")]
-pub async fn add_news(pool: Data<DBPool>, news_vec: Json<Vec<NewsInsert>>) -> actix_web::Result<impl Responder> {
-    let res = web::block(move || {
-        let mut conn = pool.get()?;
-        add_news_db(news_vec.0,&mut conn)
-    }).await?
-    .map_err(|_| error::ApiError::InternalError)?;
-    Ok(HttpResponse::Ok().json(res))
+pub async fn add_news(State(state): State<Arc<AppState>>, Json(news_vec): Json<Vec<NewsInsert>>) -> Result<impl IntoResponse,ApiError> {
+    let conn = &state.db.get().await.unwrap();
+    let res = conn.interact(move |conn| {
+        add_news_db(news_vec,conn)
+    }).await??;
+    Ok(Json(res))
 }
 
-#[get("/search_info")]
-pub async fn get_all_sources(pool: Data<DBPool>) -> actix_web::Result<impl Responder> {
-    let res = web::block(move || {
-        let mut conn = pool.get()?;
-        let sources = get_sources(0, i64::MAX, &mut conn)?.into_iter().map(|x| x.name).collect_vec();
-        let themes = get_all_themes_db(&mut conn)?.into_iter().map(|x| x.theme_name).collect_vec();
-        Ok(SearchOptions { sources, themes })
-    }).await?
-    .map_err(|_: Error| error::ApiError::InternalError)?;
-    Ok(HttpResponse::Ok().json(res))
+pub async fn get_all_sources(State(state): State<Arc<AppState>>) -> Result<impl IntoResponse,ApiError> {
+    let conn = &state.db.get().await.unwrap();
+    let res = conn.interact( |conn| {
+        let sources = get_sources(0, i64::MAX, conn)?.into_iter().map(|x| x.name).collect_vec();
+        let themes = get_all_themes_db(conn)?.into_iter().map(|x| x.theme_name).collect_vec();
+        Ok::<SearchOptions,anyhow::Error>(SearchOptions { sources, themes })
+    }).await??;
+    Ok(Json(res))
 }
 
