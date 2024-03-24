@@ -44,7 +44,7 @@ pub struct UserForm {
     pub email: String,
     pub password: String
 }
-#[derive(Debug,Deserialize)]
+#[derive(Debug,Deserialize,Clone)]
 pub struct UserRegister {
     pub email: String,
     pub password: String,

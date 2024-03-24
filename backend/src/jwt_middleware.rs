@@ -1,6 +1,6 @@
 use std::{fmt::format, sync::Arc};
 use argon2::{password_hash::SaltString, Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
-use axum::{body::Body, extract::{Request, State}, http::{header, Response, StatusCode}, middleware::Next, response::IntoResponse, routing::{get, post}, Json, Router};
+use axum::{body::Body, extract::{Request, State}, http::{header, Response, StatusCode}, middleware::Next, response::IntoResponse, Json};
 use axum_extra::extract::{cookie::{Cookie, SameSite}, CookieJar};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde_json::json;
@@ -9,12 +9,30 @@ use rand_core::OsRng;
 use crate::{api::models::TokenClaims, db::user::{models::{Role, UserForm, UserRegister}, user::{add_user_inter, get_user_db}}, error::ApiError, setup::AppState};
 
 
-// /auth
-pub fn auth_router() -> Router<Arc<AppState>> {
-    Router::new()
-        .route("/register", post(register_user))
-        .route("/login",post(login_user))
-        .route("/logout", get(logout))
+pub async fn auth(cookie_jar: CookieJar,State(state): State<Arc<AppState>>,mut request: Request<Body>, next: Next) -> Result<impl IntoResponse, ApiError> {
+	let conn = &state.db.get().await.unwrap();
+	let token = cookie_jar
+		.get("token")
+		.map(|cookie| cookie.value().to_string())
+		.or_else(|| {
+			request.headers()
+				.get(header::AUTHORIZATION)
+				.and_then(|auth_h| auth_h.to_str().ok())
+				.and_then(|auth_h| {
+					auth_h.strip_prefix("Bearer ").map(|token| token.to_owned())
+				})
+		}).ok_or(ApiError::Unauthorized)?;
+	let email = decode::<TokenClaims>(
+		&token,
+		&DecodingKey::from_secret(state.env.jwt_secret.as_ref()),
+		&Validation::default()
+	).map_err(|_| ApiError::Unauthorized)?.claims.sub;
+	let user_info = conn.interact(move |conn| get_user_db(email, conn)).await??;
+	let user_info = user_info.ok_or(ApiError::Unauthorized)?;
+	if user_info.1.name == "admin" {
+		return  Err(ApiError::Unauthorized);
+	}
+	Ok(next.run(request).await)
 }
 
 
@@ -73,17 +91,3 @@ pub async fn logout() -> Result<impl IntoResponse,ApiError> {
 		.insert(header::SET_COOKIE, cookie.to_string().parse().unwrap());
 	Ok(response)
 }
-
-// #[post("/role")]
-// pub async fn get_user_role(pool: Data<DBPool>,session: Session) -> actix_web::Result<impl Responder>  {
-//     if let Some(email) = session.get::<String>("email")? {
-//         let role = web::block(move || {
-//             let mut conn = pool.get()?;
-//             get_role_db(email.as_str(), &mut conn)
-//         }).await?
-//             .map_err(|_| ApiError::InternalError)?;
-//         Ok(HttpResponse::Ok().json(role))
-//     } else {
-//         Err(ApiError::NotLoggedError.into())
-//     }
-// }

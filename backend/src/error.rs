@@ -24,6 +24,8 @@ pub enum ApiError {
     InternalDatabaseError,
     #[display(fmt="Requested info not found in database")]
     NotFoundInDatabase,
+    #[display(fmt="User already exists")]
+    UserAlreadyExists,
 }
 
 impl IntoResponse for ApiError {

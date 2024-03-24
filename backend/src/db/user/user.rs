@@ -24,25 +24,25 @@ pub fn get_user_db(email: String, conn: &mut PgConnection) -> Result<Option<(Use
 
 }
 
-pub fn add_user_inter(user_form: &UserRegister, conn: &mut PgConnection) -> Result<User,ApiError> {
-    use diesel::OptionalExtension;
-    let res: Option<User> = users::table
-        .filter(users::email.eq(&user_form.email))
-        .first(conn)
-        .optional().map_err(|_| ApiError::InternalError)?;
-    if res.is_some() {
-        Err(ApiError::RegistrationError)
-    } else {
+pub fn add_user_inter(data: UserRegister, hashed_password: String, conn: &mut PgConnection) -> Result<User,ApiError> {
+    // use diesel::OptionalExtension;
+    // let res: Option<User> = users::table
+    //     .filter(users::email.eq(&user_form.email))
+    //     .first(conn)
+    //     .optional().map_err(|_| ApiError::InternalError)?;
+    // if res.is_some() {
+    //     Err(ApiError::RegistrationError)
+    // } else {
         let ret = diesel::insert_into(users::table)
         .values((
-            users::email.eq(&user_form.email),
-            users::passwd_hash.eq(&hash(&user_form.password, DEFAULT_COST).map_err(|_| ApiError::InternalError)?),
+            users::email.eq(data.email),
+            users::passwd_hash.eq(hashed_password),
             // users::role_id.eq(query_role_id)
         ))
         .returning(User::as_returning())
-        .get_result(conn).map_err(|_| ApiError::InternalError)?;
+        .get_result(conn).map_err(|_| ApiError::InternalDatabaseError)?;
         Ok(ret)
-    }
+    // }
 }
 
 
