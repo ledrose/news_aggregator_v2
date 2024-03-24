@@ -100,3 +100,10 @@ impl From<UsersPatch> for UserUpdate {
         Self { id, role }
     }
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct TokenClaims {
+    pub sub: String,
+    pub iat: usize,
+    pub exp: usize,
+}

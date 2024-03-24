@@ -7,18 +7,21 @@ use crate::{db::news::models::{Source, SourceTheme, Theme}, error::ApiError, sch
 
 use super::models::*;
 
-pub fn auth_inter(user_form: &UserForm, conn: &mut PgConnection) -> Result<UserWithRole,anyhow::Error> {
+pub fn get_user_db(email: String, conn: &mut PgConnection) -> Result<Option<(User,Role)>,ApiError> {
+    use diesel::OptionalExtension;
     // use crate::schema::users::dsl::*;
-    let user_db: (User,Role) = users::table
+    let user_db: Option<(User,Role)> = users::table
         .inner_join(roles::table)
-        .filter(users::email.eq(&user_form.email))
+        .filter(users::email.eq(&email))
         .select((User::as_select(),Role::as_select()))
-        .first(conn)?;
-    if verify(&user_form.password, &user_db.0.passwd_hash)? {
-        Ok(UserWithRole { id: user_db.0.id, email: user_db.0.email, role: user_db.1.name })
-    } else {
-        Err(ApiError::LoginError.into())
-    }
+        .first(conn).optional()?;
+    Ok(user_db)
+    // if verify(&user_form.password, &user_db.0.passwd_hash)? {
+    //     Ok(UserWithRole { id: user_db.0.id, email: user_db.0.email, role: user_db.1.name })
+    // } else {
+    //     Err(ApiError::LoginError.into())
+    // }
+
 }
 
 pub fn add_user_inter(user_form: &UserRegister, conn: &mut PgConnection) -> Result<User,ApiError> {

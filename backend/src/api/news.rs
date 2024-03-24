@@ -3,7 +3,7 @@ use std::sync::Arc;
 use axum::{extract::State, http::StatusCode, response::IntoResponse, routing::{get, post}, Json, Router};
 use itertools::Itertools;
 
-use crate::{api::models::NewsBatchInfo, db::{news::{models::NewsInsert, news::{add_news_db, get_all_themes_db, get_news}}, user::user::get_sources}, error::{self, ApiError, ConvertToApiError}, setup::AppState};
+use crate::{api::models::NewsBatchInfo, db::{news::{models::NewsInsert, news::{add_news_db, get_all_themes_db, get_news}}, user::user::get_sources}, error::{self, ApiError}, setup::AppState};
 
 use super::models::SearchOptions;
 
