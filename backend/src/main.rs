@@ -9,15 +9,15 @@ use tower_http::{cors::CorsLayer, trace::TraceLayer};
 #[tokio::main]
 async fn main() {
     init_tracing();
-    let state = establish_connection().await;
+    let state = Arc::new(establish_connection().await);
     let task_delay = time::interval(Duration::from_secs(60*5));
     start_background_tasks(state.db.clone(),task_delay).await;
     let app = Router::new()
-        .nest("/api", api_router())
+        .nest("/api", api_router(state.clone()))
         .fallback(err_404)
         .layer(CorsLayer::very_permissive())
         .layer(TraceLayer::new_for_http())
-        .with_state(Arc::new(state));
+        .with_state(state);
     let addr = "127.0.0.1:8080";
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     tracing::info!("listening on {}",&addr);

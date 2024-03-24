@@ -9,10 +9,10 @@ pub mod news;
 pub mod admin;
 pub mod models;
 // /api
-pub fn api_router() -> Router<Arc<AppState>> {
+pub fn api_router(state: Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
         // .service(auth::auth_scope())
         .nest("/news",news_router())
-        .nest("/admin",admin_router())
+        .nest("/admin",admin_router(state))
 }
 
