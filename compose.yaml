@@ -20,20 +20,20 @@ services:
       - ./docker.env
     ports:
       - "5050:80"
-  # backend:
-  #   container_name: news_agg_backend
-  #   image: ledrose/news_add_backend:1.0.0
-  #   build:
-  #     context: ./backend
-  #     dockerfile: Dockerfile
-  #   env_file:
-  #     - ./docker.env
-  #   ports: 
-  #     - '8080:8080'
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #       restart: true
+  backend:
+    container_name: news_agg_backend
+    image: ledrose/news_add_backend:1.0.0
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    env_file:
+      - ./docker.env
+    ports: 
+      - '8080:8080'
+    depends_on:
+      db:
+        condition: service_healthy
+        restart: true
 
 volumes:
   pgdata: {}
