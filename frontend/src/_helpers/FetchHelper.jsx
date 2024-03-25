@@ -1,11 +1,16 @@
-
+import store from "../_store/store"
+import {userState} from "../_store/userSlice"
+import { selectToken } from "../_store/userSlice";
 function basic_json_template(method,body) {
+    const token = selectToken(store.getState())
     const params = {
         method: method,
         credentials: "include",
         mode: "cors",
         headers: {
-            "Content-type": "application/json"
+            "Content-type": "application/json",
+            ...(token==null && {"Authorization": "Bearer "+token})
+            
         }
     };
     if (body!==null) {

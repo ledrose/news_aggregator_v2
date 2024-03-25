@@ -2,14 +2,38 @@ services:
   db:
     container_name: db
     image: postgres
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: News
+    restart: always
+    env_file:
+      - ./docker.env
     ports:
       - 5432:5432
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      interval: 5s
+      timeout: 5s
+  pgAdmin:
+    image: dpage/pgadmin4
+    container_name: pgAdmin
+    env_file:
+      - ./docker.env
+    ports:
+      - "5050:80"
+  # backend:
+  #   container_name: news_agg_backend
+  #   image: ledrose/news_add_backend:1.0.0
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   env_file:
+  #     - ./docker.env
+  #   ports: 
+  #     - '8080:8080'
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #       restart: true
 
 volumes:
   pgdata: {}

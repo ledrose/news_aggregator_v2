@@ -30,7 +30,7 @@ pub async fn login_user(State(state): State<Arc<AppState>>,Json(data):Json<UserF
 	let iat = now.timestamp() as usize;
     let exp = (now + chrono::Duration::try_minutes(60).unwrap()).timestamp() as usize;
 	let claims = TokenClaims {
-		sub: user_info.0.email,
+		sub: user_info.0.email.clone(),
 		iat,
 		exp,
 	};
@@ -40,7 +40,7 @@ pub async fn login_user(State(state): State<Arc<AppState>>,Json(data):Json<UserF
 		.max_age(time::Duration::hours(1))
 		.same_site(SameSite::Lax)
 		.http_only(true);
-	let mut response = Response::new(json!({"status":"success","token":token}).to_string());
+	let mut response = Response::new(json!({"status":"success","token":token,"email":user_info.0.email,"role":user_info.1.name}).to_string());
 	response.headers_mut().insert(header::SET_COOKIE, cookie.to_string().parse().unwrap());
 	Ok(response)
 }
@@ -57,7 +57,6 @@ pub async fn register_user(State(state): State<Arc<AppState>>,Json(data):Json<Us
 		.hash_password(data.password.as_bytes(), &salt)
 		.map_err(|_| ApiError::InternalError)?
 		.to_string();
-	let conn = &state.db.get().await.unwrap();
 	let user = conn.interact(move |conn| add_user_inter(data, hashed_password, conn)).await??;
 	Ok(Json(user))
 }

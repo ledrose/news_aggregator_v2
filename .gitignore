@@ -28,8 +28,6 @@
 /frontend/yarn-debug.log*
 /frontend/yarn-error.log*
 
-# local env files
-/frontend/.env*.local
 
 # vercel
 /frontend/.vercel

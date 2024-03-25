@@ -15,7 +15,7 @@ export default function LoginForm() {
     const [isLoading,data,err,sendRequest] = useCustomFetch(login_api,(data)=>{
         console.log({email:data.email,role:data.role});
         // reset();
-        dispatch(setUser({email:data.email,role:data.role}));
+        dispatch(setUser({email:data.email,role:data.role,token:data.token}));
         navigate("/");
     });
     const onSubmit = (data) => {
