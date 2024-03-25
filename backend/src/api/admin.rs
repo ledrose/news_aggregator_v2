@@ -3,7 +3,7 @@ use std::sync::Arc;
 use axum::{extract::{Query, State}, middleware, response::IntoResponse, routing::{get,patch}, Json, Router};
 use serde_json::json;
 use itertools::Itertools;
-use crate::{api::models::{PaginateData, SourceThemePatch, SourceThemesResp, UsersPatch}, db::{news::news::{delete_sources_db, get_sources_db, insert_sources_db, update_source_themes_db, update_sources_db}, user::user::{delete_users_db, get_all_roles_db, get_source_themes, get_users_db, update_users_db}}, error::ApiError, jwt_middleware, setup::AppState};
+use crate::{api::models::{PaginateData, SourceThemePatch, SourceThemesResp, UsersPatch}, auth_middleware, db::{news::news::{delete_sources_db, get_sources_db, insert_sources_db, update_source_themes_db, update_sources_db}, user::user::{delete_users_db, get_all_roles_db, get_source_themes, get_users_db, update_users_db}}, error::ApiError, jwt_middleware, setup::AppState};
 
 use super::models::{UserAnswer, SourcesPatch};
 
@@ -14,7 +14,7 @@ pub fn admin_router(state: Arc<AppState>) -> Router<Arc<AppState>> {
         .route("/sources",get(get_sources).patch(patch_sources))
         .route("/themes",get(get_themes).patch(patch_themes))
         .route("/roles",get(get_all_roles))
-        .route_layer(middleware::from_fn_with_state(state.clone(), jwt_middleware::auth))
+        .route_layer(auth_middleware!(state,"admin"))
 }
 
 

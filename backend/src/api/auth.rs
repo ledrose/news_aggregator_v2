@@ -1,20 +1,22 @@
 use std::{fmt::format, sync::Arc};
 use argon2::{password_hash::SaltString, Argon2, PasswordHash, PasswordHasher, PasswordVerifier};
-use axum::{body::Body, extract::{Request, State}, http::{header, Response, StatusCode}, middleware::Next, response::IntoResponse, routing::{get, post}, Json, Router};
+use axum::{body::Body, extract::{Request, State}, http::{header, HeaderMap, Response, StatusCode}, middleware::{self, Next}, response::IntoResponse, routing::{get, post}, Extension, Json, Router};
 use axum_extra::extract::{cookie::{Cookie, SameSite}, CookieJar};
 use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde_json::json;
 use rand_core::OsRng;
 
-use crate::{api::models::TokenClaims, db::user::{models::{Role, UserForm, UserRegister}, user::{add_user_inter, get_user_db}}, error::ApiError, setup::AppState};
+use crate::{api::models::TokenClaims, auth_middleware, db::user::{models::{Role, User, UserForm, UserRegister, UserWithRole}, user::{add_user_inter, get_user_db}}, error::ApiError, jwt_middleware, setup::AppState};
 
 
 // /auth
-pub fn auth_router() -> Router<Arc<AppState>> {
+pub fn auth_router(state: Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
         .route("/register", post(register_user))
         .route("/login",post(login_user))
         .route("/logout", get(logout))
+		.route("/getme", get(get_me)
+			.route_layer(auth_middleware!(state)))
 }
 
 
@@ -23,7 +25,7 @@ pub async fn login_user(State(state): State<Arc<AppState>>,Json(data):Json<UserF
 	let user_info = conn.interact(move |conn| get_user_db(data.email, conn)).await??
 		.ok_or(ApiError::LoginError)?;
 	let hash = PasswordHash::new(&user_info.0.passwd_hash).map_err(|_| ApiError::LoginError)?;
-	Argon2::default().verify_password(&data.password.as_bytes(), &hash).map_err(|_| ApiError::LoginError)?;
+	Argon2::default().verify_password(data.password.as_bytes(), &hash).map_err(|_| ApiError::LoginError)?;
 	let now = chrono::Utc::now();
 	let iat = now.timestamp() as usize;
     let exp = (now + chrono::Duration::try_minutes(60).unwrap()).timestamp() as usize;
@@ -57,7 +59,7 @@ pub async fn register_user(State(state): State<Arc<AppState>>,Json(data):Json<Us
 		.to_string();
 	let conn = &state.db.get().await.unwrap();
 	let user = conn.interact(move |conn| add_user_inter(data, hashed_password, conn)).await??;
-	Ok(Json(json!({"user":user})))
+	Ok(Json(user))
 }
 
 pub async fn logout() -> Result<impl IntoResponse,ApiError> {
@@ -72,6 +74,15 @@ pub async fn logout() -> Result<impl IntoResponse,ApiError> {
 		.headers_mut()
 		.insert(header::SET_COOKIE, cookie.to_string().parse().unwrap());
 	Ok(response)
+}
+
+pub async fn get_me(State(state): State<Arc<AppState>>, Extension(user_info):Extension<(User,Role)>) -> impl IntoResponse {
+	let user = UserWithRole {
+		id: user_info.0.id,
+		email: user_info.0.email,
+		role: user_info.1.name,
+	};
+	Json(user)
 }
 
 // #[post("/role")]

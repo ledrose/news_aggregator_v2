@@ -11,7 +11,7 @@ pub mod models;
 // /api
 pub fn api_router(state: Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
-        .nest("/auth", auth_router())
+        .nest("/auth", auth_router(state.clone()))
         .nest("/news",news_router())
         .nest("/admin",admin_router(state))
 }
