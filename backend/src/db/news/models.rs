@@ -3,8 +3,6 @@ use chrono::Utc;
 use diesel::{Queryable, Selectable, associations::{Associations, Identifiable}, prelude::Insertable, query_builder::AsChangeset};
 use serde::{Serialize, Deserialize};
 
-use crate::schema::news::description;
-
 
 #[derive(Selectable, Identifiable, Queryable, Associations,Debug,Serialize,Deserialize,PartialEq)]
 #[diesel(table_name = crate::schema::news)]

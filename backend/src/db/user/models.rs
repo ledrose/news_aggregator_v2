@@ -16,7 +16,7 @@ pub enum RoleEnum {
     Admin
 }
 
-#[derive(Queryable,Associations,Selectable,Debug,Serialize,Deserialize)]
+#[derive(Queryable,Associations,Selectable,Debug,Serialize,Deserialize,Clone)]
 #[diesel(table_name = crate::schema::users)]
 #[diesel(belongs_to(Role))]
 #[diesel(check_for_backend(diesel::pg::Pg))]
@@ -44,7 +44,7 @@ pub struct UserForm {
     pub email: String,
     pub password: String
 }
-#[derive(Debug,Deserialize)]
+#[derive(Debug,Deserialize,Clone)]
 pub struct UserRegister {
     pub email: String,
     pub password: String,

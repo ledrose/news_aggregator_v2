@@ -29,7 +29,7 @@ pub fn get_news(start_date: Option<DateTime<Utc>>, amount: i64, prefs: &SearchQu
         query = query.filter(themes::theme_name.ne(pref))
     }
     if let Some(search) = &prefs.query {
-        if search!="" {
+        if !search.is_empty() {
             query = query.filter(news::header.ilike(format!("%{search}%")))
         }
     }
@@ -169,7 +169,7 @@ pub fn add_news_db(news_vec: Vec<NewsInsert>, conn: &mut PgConnection) -> Result
     Ok(res)
 }
 
-pub fn get_source_themes_with_def_insert<'a>(mut source_theme_info: HashSet<(i32, &'a str)>,conn: &mut PgConnection) -> anyhow::Result<Vec<SourceTheme>> {
+pub fn get_source_themes_with_def_insert(mut source_theme_info: HashSet<(i32, &str)>,conn: &mut PgConnection) -> anyhow::Result<Vec<SourceTheme>> {
     let mut query = sourcethemes::table.into_boxed();
     for (id,name) in source_theme_info.iter() {
         query = query.or_filter(sourcethemes::source_id.eq(id).and(sourcethemes::source_theme_name.eq(name)))

@@ -15,6 +15,7 @@ function fetchState(isLoading,data,err) {
 //isLoading,data,error
 export default function useCustomFetch(promise,onData=(json)=>{},onErr=(err)=>{}) {
     const navigate = useNavigate();
+    const query =  useSelector((state) => state.user);
     const [respState,setRespState] = useState(fetchState(false,null,null));
     const dispatch = useDispatch();
     const errAction = (err) => {
