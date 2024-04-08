@@ -18,10 +18,13 @@ function basic_json_template(method,body) {
     }
     return params;
 }   
-export default function request(relative_url,method,body) {
+export default function request(url,method,body, isFullLink=false) {
+    if (!isFullLink) {
+        const url = process.env.REACT_APP_API_URL+url;
+    }
     if (method == "GET") {
-        return fetch(process.env.REACT_APP_API_URL+relative_url+"?"+new URLSearchParams(body), basic_json_template(method));
+        return fetch(url+"?"+new URLSearchParams(body), basic_json_template(method));
     } else {
-        return fetch(process.env.REACT_APP_API_URL+relative_url, basic_json_template(method,body));
+        return fetch(url, basic_json_template(method,body));
     }
 }

@@ -1,7 +1,10 @@
 import { Button, Col, Row } from "react-bootstrap";
 import {Link} from "react-router-dom";
 import "./NewsBlock.css";
+import { useEffect, useState } from "react";
+import get_article from "../../acticle/article";
 export default function NewsBlock({news_info}) {
+    const [open,setOpen] = useState(false)
     return <div id={news_info.id} className="main-news-div">
         <Row className="justify-content-around">
             <Col md="6">
@@ -17,12 +20,33 @@ export default function NewsBlock({news_info}) {
         <MainBlock news_info={news_info}/>
         <Row className="justify-content-end">
             <Col md="2">
-                <Link to={news_info.link} target="_blank" className="btn btn-primary">Читать далее</Link>
+                <Link to={news_info.link} target="_blank" onClick={() => {setOpen(true)}} className="btn btn-primary">Читать далее</Link>
             </Col>
         </Row>
+        {open &&
+            <Row>
+                <Col md="8">
+                    <ArticleReadable link={news_info.link} key={news_info.link}/>
+                </Col>
+            </Row>
+        }
     </div>
 }
 
+function ArticleReadable({link}) {
+    const [loaded,setLoaded] = useState(false);
+    const [page,setPage] = useState("");
+    useEffect(() => {
+        get_article(link).then((res) => {
+            setPage(res);
+            setLoaded(true);
+        })
+    },[]);
+    return <>
+        {loaded && <div>{page}</div>}
+        {!loaded && <div>Loading</div>}
+    </>
+}
 
 function MainBlock({news_info}) {
     if (news_info.image!=undefined && news_info.image!=null) {
