@@ -1,9 +1,8 @@
 import request from "../../_helpers/FetchHelper";
-import {Window} from "happy-dom"
 import {Readability,isProbablyReaderable} from "@mozilla/readability"
 
 async function get_html(link) {
-    return request(link,"GET",{},false)
+    return request(link,"GET",{},true)
 }
 
 export default async function get_article(link) {
@@ -11,8 +10,8 @@ export default async function get_article(link) {
 	if (!resp.ok) {
 		return "";
 	}
-	const window = new Window();
-	window.document.write(resp);
-	const article = new Readability(window.document).parse();
-	return article.content
+	const text = await new Response(resp.body).text();
+	const document = new DOMParser().parseFromString(text,"text/html");
+	const article = new Readability(document).parse();
+	return article.textContent;
 }

@@ -5,8 +5,8 @@ function basic_json_template(method,body) {
     const token = selectToken(store.getState())
     const params = {
         method: method,
-        credentials: "include",
         mode: "cors",
+        credentials: "include",
         headers: {
             "Content-type": "application/json",
             ...(token==null && {"Authorization": "Bearer "+token})
@@ -18,13 +18,15 @@ function basic_json_template(method,body) {
     }
     return params;
 }   
-export default function request(url,method,body, isFullLink=false) {
-    if (!isFullLink) {
-        const url = process.env.REACT_APP_API_URL+url;
+export default function request(url,method,body, isProxyFullLink=false) {
+    if (!isProxyFullLink) {
+        url = process.env.REACT_APP_API_URL+url;
+    } else {
+        url = process.env.REACT_APP_API_URL+"cors_proxy/"+url;
     }
     if (method == "GET") {
         return fetch(url+"?"+new URLSearchParams(body), basic_json_template(method));
-    } else {
+    } else {    
         return fetch(url, basic_json_template(method,body));
     }
 }

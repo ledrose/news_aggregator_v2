@@ -20,7 +20,7 @@ export default function NewsBlock({news_info}) {
         <MainBlock news_info={news_info}/>
         <Row className="justify-content-end">
             <Col md="2">
-                <Link to={news_info.link} target="_blank" onClick={() => {setOpen(true)}} className="btn btn-primary">Читать далее</Link>
+                <button onClick={() => {setOpen(true)}} className="btn btn-primary">Читать далее</button>
             </Col>
         </Row>
         {open &&
