@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import get_article from "../../acticle/article";
 export default function NewsBlock({news_info}) {
     const [open,setOpen] = useState(false)
+    const col_el = "collapse" + news_info.id;
     return <div id={news_info.id} className="main-news-div">
         <Row className="justify-content-around">
             <Col md="6">
@@ -20,13 +21,22 @@ export default function NewsBlock({news_info}) {
         <MainBlock news_info={news_info}/>
         <Row className="justify-content-end">
             <Col md="2">
-                <button onClick={() => {setOpen(true)}} className="btn btn-primary">Читать далее</button>
+                <Link to={news_info.link} target="_blank" className="btn btn-primary">Открыть ссылку</Link>
+            </Col>
+            <Col md="2">
+                <button onClick={() => {setOpen(!open)}} className="btn btn-primary" 
+                    // data-mdb-collapse-init
+                    // data-mdb-ripple-init
+                    // data-mdb-target="#collapseExample"
+                    // aria-expanded="false"
+                    // aria-controls={col_el}
+                >Открыть сдесь</button>
             </Col>
         </Row>
         {open &&
-            <Row>
-                <Col md="8">
-                    <ArticleReadable link={news_info.link} key={news_info.link}/>
+            <Row className="justify-content-around">
+                <Col md="10">
+                    <ArticleReadable link={news_info.link} key={news_info.link} />
                 </Col>
             </Row>
         }
@@ -43,7 +53,7 @@ function ArticleReadable({link}) {
         })
     },[]);
     return <>
-        {loaded && <div>{page}</div>}
+        {loaded && <div className="news-text">{page}</div>}
         {!loaded && <div>Loading</div>}
     </>
 }

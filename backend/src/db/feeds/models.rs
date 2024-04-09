@@ -25,5 +25,13 @@ pub struct FeedInsert {
 pub struct FeedSource {
 	pub id: i32,
 	pub feed_id: i32,
-	pub source_theme_id: i32
+	pub source_id: i32
+}
+
+#[derive(Insertable,Debug,Serialize,Deserialize, Clone)]
+#[diesel(table_name = crate::schema::feedsource)]
+#[diesel(check_for_backend(diesel::pg::Pg))]
+pub struct FeedSourceInsert {
+	pub feed_id: i32,
+	pub source_id: i32
 }

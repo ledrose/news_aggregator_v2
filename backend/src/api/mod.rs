@@ -12,7 +12,7 @@ pub mod feeds;
 // /api
 pub fn api_router(state: Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
-        .nest("/feed", feed_router())
+        .nest("/feed", feed_router(state.clone()))
         .nest("/auth", auth_router(state.clone()))
         .nest("/news",news_router())
         .nest("/admin",admin_router(state))

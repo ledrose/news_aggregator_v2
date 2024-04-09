@@ -9,6 +9,6 @@ CREATE TABLE feeds (
 CREATE TABLE feedSource (
 	id SERIAL PRIMARY KEY,
 	feed_id INTEGER NOT NULL REFERENCES feeds(id),
-	source_theme_id INTEGER NOT NULL REFERENCES sourceThemes(id),
-	UNIQUE(feed_id,source_theme_id)
+	source_id INTEGER NOT NULL REFERENCES sources(id),
+	UNIQUE(feed_id,source_id)
 );

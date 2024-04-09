@@ -25,6 +25,17 @@
     justify-content: center;
 }
 
+.news-text {
+    /* margin-top: ; */
+    color: white;
+    font-size: 16px;
+    text-align: justify;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+
 .news-header {
     color: white;
     font-size: 36px;

@@ -18,6 +18,7 @@ pub fn admin_router(state: Arc<AppState>) -> Router<Arc<AppState>> {
 }
 
 
+
 pub async fn get_users(State(state): State<Arc<AppState>>,Query(query): Query<PaginateData>) -> Result<impl IntoResponse,ApiError> {
     let conn = &state.db.get().await.unwrap();
     let user_list = conn.interact(move |conn| {

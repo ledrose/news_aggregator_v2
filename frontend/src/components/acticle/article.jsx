@@ -13,5 +13,5 @@ export default async function get_article(link) {
 	const text = await new Response(resp.body).text();
 	const document = new DOMParser().parseFromString(text,"text/html");
 	const article = new Readability(document).parse();
-	return article.content;
+	return article.textContent;
 }

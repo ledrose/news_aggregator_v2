@@ -51,27 +51,17 @@ pub struct SourceThemesResp {
 
 pub struct FeedInfo {
     pub name: String,
-    pub sources: Vec<SourceThemeUnion>
+    pub sources: Vec<String>
 }
 
-#[derive(Debug,Deserialize,Serialize)]
-
-pub struct SourceThemeUnion {
-    pub source: String,
-    pub theme: Vec<String>
-}
-
-// feed, theme_name, source_name
-impl From<(Vec<(FeedSource,String,String)>,Feed)> for FeedInfo {
-    fn from(value: (Vec<(FeedSource,String,String)>,Feed)) -> Self {
+// string is sources
+impl From<(Vec<(FeedSource,String)>,Feed)> for FeedInfo {
+    fn from(value: (Vec<(FeedSource,String)>,Feed)) -> Self {
         let feed_name = value.1.name;
-        let vec = value.0.iter()
-            .map(|x| (&x.1,&x.2))
-            .group_by(|x| x.1)
-            .into_iter()
-            .map(|(source_name, group)| SourceThemeUnion { source: source_name.to_string(), theme: group.map(|x| x.0).cloned().collect_vec() })
+        let vec = value.0.into_iter()
+            .map(|x| x.1)
             .collect_vec();
-        FeedInfo { name: feed_name, sources: vec }
+        Self { name: feed_name, sources: vec }
     }
 }
 

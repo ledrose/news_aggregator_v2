@@ -12,7 +12,7 @@ diesel::table! {
     feedsource (id) {
         id -> Int4,
         feed_id -> Int4,
-        source_theme_id -> Int4,
+        source_id -> Int4,
     }
 }
 
@@ -72,7 +72,7 @@ diesel::table! {
 
 diesel::joinable!(feeds -> users (user_id));
 diesel::joinable!(feedsource -> feeds (feed_id));
-diesel::joinable!(feedsource -> sourcethemes (source_theme_id));
+diesel::joinable!(feedsource -> sources (source_id));
 diesel::joinable!(news -> sources (source_id));
 diesel::joinable!(news -> sourcethemes (theme_id));
 diesel::joinable!(sourcethemes -> sources (source_id));
