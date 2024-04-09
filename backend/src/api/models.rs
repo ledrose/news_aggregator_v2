@@ -11,7 +11,7 @@ pub struct NewsBatchInfo {
     pub prefs: SearchQuery
 }
 
-#[derive(Debug,Serialize)]
+#[derive(Debug,Serialize,)]
 pub struct UserAnswer {
     pub id: i32,
     pub email: String,

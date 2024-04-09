@@ -14,7 +14,6 @@ async fn main() {
     start_background_tasks(state.db.clone(),task_delay).await;
     let app = Router::new()
         // .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
-        // .me("/api-docs/openapi.json", get(openapi))
         .nest("/api", api_router(state.clone()))
         .route_service("/", ServeDir::new("build"))
         .route_service("/*key", ServeDir::new("build").fallback(ServeFile::new("build/index.html")))

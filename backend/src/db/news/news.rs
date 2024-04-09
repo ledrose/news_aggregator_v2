@@ -43,13 +43,6 @@ pub fn get_news(start_date: Option<DateTime<Utc>>, amount: i64, prefs: &SearchQu
         .into_iter().filter_map(|x| x.try_into().ok()).collect_vec()
 }
 
-// pub fn get_sources_by_type(type_val: &str, conn: &mut PgConnection) -> Result<Vec<Source>,anyhow::Error> {
-//     let res: Vec<Source> = sources::table
-//         .filter(sources::source_type.eq(type_val))
-//         .select(Source::as_select())
-//         .load::<Source>(conn)?;
-//     Ok(res)
-// }
 
 pub fn get_all_themes_db(conn: &mut PgConnection) -> Result<Vec<Theme>,anyhow::Error> {
     let res = themes::table
