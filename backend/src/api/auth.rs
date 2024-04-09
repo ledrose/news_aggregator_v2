@@ -37,7 +37,7 @@ pub async fn login_user(State(state): State<Arc<AppState>>,Json(data):Json<UserF
 	let token = encode(&Header::default(), &claims, &EncodingKey::from_secret(state.env.jwt_secret.as_ref())).unwrap();
 	let cookie = Cookie::build(("token", token.to_owned()))
 		.path("/")
-		.max_age(time::Duration::hours(1))
+		.max_age(time::Duration::minutes(state.env.jwt_maxage))
 		.same_site(SameSite::Lax)
 		.http_only(true);
 	let mut response = Response::new(json!({"status":"success","token":token,"email":user_info.0.email,"role":user_info.1.name}).to_string());

@@ -1,6 +1,6 @@
 
 use std::{sync::Arc, time::Duration};
-use axum::{http::StatusCode, response::IntoResponse, Router};
+use axum::{http::StatusCode, response::IntoResponse, routing::get, Json, Router};
 use rust_news_aggregator_v2::{self, api::{self, api_router}, background_jobs::start_background_tasks, setup::establish_connection};
 use tokio::time;
 use tower_http::{cors::CorsLayer, services::{ServeDir, ServeFile}, trace::TraceLayer};
@@ -13,6 +13,8 @@ async fn main() {
     let task_delay = time::interval(Duration::from_secs(60*5));
     start_background_tasks(state.db.clone(),task_delay).await;
     let app = Router::new()
+        // .merge(SwaggerUi::new("/swagger-ui").url("/api-docs/openapi.json", ApiDoc::openapi()))
+        // .me("/api-docs/openapi.json", get(openapi))
         .nest("/api", api_router(state.clone()))
         .route_service("/", ServeDir::new("build"))
         .route_service("/*key", ServeDir::new("build").fallback(ServeFile::new("build/index.html")))

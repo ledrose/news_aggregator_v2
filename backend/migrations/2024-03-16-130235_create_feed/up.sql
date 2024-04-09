@@ -2,7 +2,8 @@
 CREATE TABLE feeds (
     id SERIAL PRIMARY KEY,
 	user_id INTEGER NOT NULL REFERENCES users(id),
-	name VARCHAR NOT NULL
+	name VARCHAR NOT NULL,
+	UNIQUE(user_id,name)
 );
 
 CREATE TABLE feedSource (

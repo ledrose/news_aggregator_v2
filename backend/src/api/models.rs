@@ -1,7 +1,8 @@
 use chrono::{DateTime, Utc};
+use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
-use crate::db::{user::models::{User, Role, UserUpdate}, news::models::{Theme, Source, SourceTheme, SourceInsert}};
+use crate::db::{feeds::models::{Feed, FeedSource}, news::models::{Source, SourceInsert, SourceTheme, Theme}, user::models::{Role, User, UserUpdate}};
 
 #[derive(Serialize,Deserialize,Debug)]
 pub struct NewsBatchInfo {
@@ -44,6 +45,34 @@ pub struct SourceThemesResp {
     pub source: String,
     pub theme: String,
     pub name: String
+}
+
+#[derive(Debug,Deserialize,Serialize)]
+
+pub struct FeedInfo {
+    pub name: String,
+    pub sources: Vec<SourceThemeUnion>
+}
+
+#[derive(Debug,Deserialize,Serialize)]
+
+pub struct SourceThemeUnion {
+    pub source: String,
+    pub theme: Vec<String>
+}
+
+// feed, theme_name, source_name
+impl From<(Vec<(FeedSource,String,String)>,Feed)> for FeedInfo {
+    fn from(value: (Vec<(FeedSource,String,String)>,Feed)) -> Self {
+        let feed_name = value.1.name;
+        let vec = value.0.iter()
+            .map(|x| (&x.1,&x.2))
+            .group_by(|x| x.1)
+            .into_iter()
+            .map(|(source_name, group)| SourceThemeUnion { source: source_name.to_string(), theme: group.map(|x| x.0).cloned().collect_vec() })
+            .collect_vec();
+        FeedInfo { name: feed_name, sources: vec }
+    }
 }
 
 impl From<(SourceTheme,Theme,Source)> for SourceThemesResp {

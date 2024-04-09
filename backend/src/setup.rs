@@ -30,7 +30,7 @@ pub struct Config {
     pub database_url: String,
     pub jwt_secret: String,
     pub jwt_expires_in: String,
-    pub jwt_maxage: i32,
+    pub jwt_maxage: i64,
 }
 
 
@@ -45,7 +45,7 @@ impl Config {
             database_url,
             jwt_secret,
             jwt_expires_in,
-            jwt_maxage: jwt_maxage.parse::<i32>().unwrap(),
+            jwt_maxage: jwt_maxage.parse().unwrap(),
         }
     }
 }
