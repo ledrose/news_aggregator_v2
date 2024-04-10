@@ -3,7 +3,7 @@ import { Button, Form, FormGroup, Row,Col } from "react-bootstrap";
 import "./QuerySettings.css"
 import useCustomFetch from "../../../_helpers/CustomFetchHook";
 import { get_search_options_api } from "../../backend_api/news";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { add_source, add_theme, remove_source, remove_theme, reset_source, reset_theme, set_query } from "../../../_store/querySlice";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -11,11 +11,13 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 export function QueryBlock({reset}) {
     const [,data,,sendRequest] = useCustomFetch(get_search_options_api);
+    const userInfo = useSelector((state) => state.user);
+    // const queryInfo = useSelector((state) => state.query);
     useEffect(() => sendRequest(),[]);
     const dispatch = useDispatch();
     const location = useLocation();
     const navigate = useNavigate();
-    const sources = data?.sources??[];
+    const sources = userInfo.allowed_sources.length>0?userInfo.allowed_sources:data?.sources??[];
     const themes = data?.themes??[];
     const onSubmit = (ev) => {
         ev.preventDefault();

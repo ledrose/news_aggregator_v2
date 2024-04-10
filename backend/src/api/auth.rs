@@ -83,17 +83,3 @@ pub async fn get_me(State(state): State<Arc<AppState>>, Extension(user_info):Ext
 	};
 	Json(user)
 }
-
-// #[post("/role")]
-// pub async fn get_user_role(pool: Data<DBPool>,session: Session) -> actix_web::Result<impl Responder>  {
-//     if let Some(email) = session.get::<String>("email")? {
-//         let role = web::block(move || {
-//             let mut conn = pool.get()?;
-//             get_role_db(email.as_str(), &mut conn)
-//         }).await?
-//             .map_err(|_| ApiError::InternalError)?;
-//         Ok(HttpResponse::Ok().json(role))
-//     } else {
-//         Err(ApiError::NotLoggedError.into())
-//     }
-// }

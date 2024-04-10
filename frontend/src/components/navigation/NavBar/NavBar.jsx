@@ -5,7 +5,8 @@ import { logout_api } from '../../backend_api/login';
 import usePersistentState from '../../../_helpers/UsePersistent';
 import useCustomFetch from '../../../_helpers/CustomFetchHook';
 import { useDispatch, useSelector } from 'react-redux';
-import { reset, setUser } from '../../../_store/userSlice';
+import { reset, resetAllowedSources, setAllowedSources, setUser } from '../../../_store/userSlice';
+import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { QueryBlock } from '../../main_page/QuerySettings/QuerySettings';
@@ -16,10 +17,11 @@ export default function NavBar({passHeaderHeight,reset}) {
     return (
         <Navbar ref={headerRef} expand="lg" bg='primary' className='bg-body-tetiary'>
             <Container fluid>
-                    <Col md="2">
+                {/* <Row className='justify-conntent-between'> */}
+                    <Col md="1">
                         <Navbar.Brand href='/'>NewsRss</Navbar.Brand>
                     </Col>
-                    <Col md="1" className='offset-md-8'>
+                    <Col md="1" className='offset-md-4'>
                         <NavDropdown className='col-query' title="Поиск" drop='down-centered'>
                             <div className='border-search'>
                             {/* <NavDropdown.Item> */}
@@ -28,22 +30,34 @@ export default function NavBar({passHeaderHeight,reset}) {
                             </div>
                         </NavDropdown>
                     </Col>
-                    <Col md="1">  
+                    <Col md="3">  
                         <Navbar.Collapse id='navbar-colapse-login'>
-                            <SelectInfo></SelectInfo>
+                            <SelectInfo reset={reset}></SelectInfo>
                         </Navbar.Collapse>
                     </Col>
+                {/* </Row> */}
             </Container>
         </Navbar>
     );
 }
 
-function SelectInfo() {
+function SelectInfo({reset}) {
     const userInfo = useSelector((state) => state.user);
+    const navigate = useNavigate();
+    const channel = useSelector((state) => state.user.current_channel);
     const dispatch = useDispatch();
-    const [isLoading,data,err,logout] = useCustomFetch(logout_api,(data)=>{dispatch(reset())});
+    const channelTitle = channel!=null?"Channel: "+channel:"Channel: default"; 
+    const [isLoading,data,err,logout] = useCustomFetch(logout_api,(data)=>{dispatch(reset());});
     if (userInfo.email!==null) {
-        return (
+        return (<>
+            {userInfo.channels.length>0 &&
+                <NavDropdown title={channelTitle} id="channels-nav-dropdown" className='me-4'>
+                    <NavDropdown.Item onClick={()=>{dispatch(resetAllowedSources()); reset();}}>Default</NavDropdown.Item>
+                    {userInfo.channels.map((el) => 
+                        <NavDropdown.Item key={el.name} onClick={()=>{dispatch(setAllowedSources(el)); reset()}}> {el.name}</NavDropdown.Item>
+                    )}
+                </NavDropdown>
+            }
             <NavDropdown title={userInfo.email} id="auth-nav-dropdown">
                 {userInfo.role=="admin" &&
                 <>
@@ -54,7 +68,8 @@ function SelectInfo() {
                 }
                 <NavDropdown.Item onClick={logout}>Выйти</NavDropdown.Item>
             </NavDropdown>
-        )
+            {/* </Col> */}
+        </>)
     }
     return <>
         <Nav.Link href='/login'>Войти</Nav.Link>

@@ -9,25 +9,33 @@ use crate::{schema::{news, themes, sources, sourcethemes}, api::models::{SearchQ
 use super::models::*;
 
 
-pub fn get_news(start_date: Option<DateTime<Utc>>, amount: i64, prefs: &SearchQuery, conn: &mut PgConnection) -> Vec<NewsFull> {
-    // todo!();
+pub fn get_news(start_date: Option<DateTime<Utc>>, amount: i64, prefs: &mut SearchQuery, conn: &mut PgConnection) -> Vec<NewsFull> {
     let start_date = start_date.unwrap_or(chrono::Utc::now());
     let mut query = news::table
         .left_join(sourcethemes::table.left_join(themes::table))
         .left_join(sources::table)
         .into_boxed();
-    for pref in &prefs.add_source {
-        query = query.or_filter(sources::name.eq(pref));
+    if !prefs.allowed_sources.is_empty() {
+        if prefs.add_source.is_empty() {
+            prefs.add_source = prefs.allowed_sources.clone();
+        } else {
+            prefs.add_source = prefs.add_source.clone().into_iter().filter(|el| prefs.allowed_sources.contains(el)).collect_vec();
+        }
     }
-    for pref in &prefs.remove_source {
-        query = query.filter(sources::name.ne(pref));
+    tracing::info!("Add source: {:?}",prefs.add_source);
+    if !prefs.add_source.is_empty() {
+        query = query.filter(sources::name.eq_any(&prefs.add_source));
     }
-    for pref in &prefs.add_themes {
-        query = query.or_filter(themes::theme_name.eq(pref))
+    if !prefs.remove_source.is_empty() {
+        query = query.filter(sources::name.ne_all(&prefs.remove_source));
     }
-    for pref in &prefs.remove_themes {
-        query = query.filter(themes::theme_name.ne(pref))
+    if !prefs.add_themes.is_empty() {
+        query = query.filter(themes::theme_name.eq_any(&prefs.add_themes));
     }
+    if !prefs.remove_themes.is_empty() {
+        query = query.filter(themes::theme_name.ne_all(&prefs.remove_themes));
+    }
+
     if let Some(search) = &prefs.query {
         if !search.is_empty() {
             query = query.filter(news::header.ilike(format!("%{search}%")))

@@ -39,7 +39,7 @@ export const userState = createSlice({
         reset_theme: (state,action) => {
             state.add_themes = state.add_themes.filter((el) => el!=action.payload);
             state.remove_themes = state.remove_themes.filter((el) => el!=action.payload);
-        }
+        },
     }
 })
 

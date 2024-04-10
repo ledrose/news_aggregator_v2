@@ -4,18 +4,23 @@ import usePersistentState from "../../_helpers/UsePersistent";
 import { Link, redirect, useNavigate } from "react-router-dom";
 import {Button, Form, Row,Col, Spinner} from "react-bootstrap";
 import useCustomFetch from "../../_helpers/CustomFetchHook";
-import { reset, setUser } from "../../_store/userSlice";
+import { reset, setChannel, setUser } from "../../_store/userSlice";
 import { useDispatch } from "react-redux";
 import { useState } from "react";
+import { get_channels_api } from "../backend_api/channels";
 export default function LoginForm() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const {register, handleSubmit, formState: {errors}} = useForm();
     const [validated,setValidated] = useState(false);
+    const [,,,getChannels] = useCustomFetch(get_channels_api,(data)=>{
+        dispatch(setChannel(data));
+    });
     const [isLoading,data,err,sendRequest] = useCustomFetch(login_api,(data)=>{
         console.log({email:data.email,role:data.role});
         // reset();
         dispatch(setUser({email:data.email,role:data.role,token:data.token}));
+        getChannels();
         navigate("/");
     });
     const onSubmit = (data) => {

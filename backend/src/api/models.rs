@@ -27,6 +27,7 @@ impl From<(User,Role)> for UserAnswer {
 #[derive(Debug,Serialize,Deserialize,Clone)]
 pub struct SearchQuery { 
     pub query: Option<String>,
+    pub allowed_sources: Vec<String>,
     pub add_source: Vec<String>,
     pub remove_source: Vec<String>,
     pub add_themes: Vec<String>,

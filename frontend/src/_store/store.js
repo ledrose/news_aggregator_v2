@@ -6,12 +6,14 @@ import storage from "redux-persist/lib/storage"
 import {persistStore, persistReducer} from "redux-persist";
 import { thunk } from "redux-thunk";
 
-const persistConfig = {
+const persistUserConfig = {
     key: "root",
     storage
 }
 
-const persistedUserReducer = persistReducer(persistConfig,userReducer)
+
+const persistedUserReducer = persistReducer(persistUserConfig,userReducer)
+
 
 const store =  configureStore({
     reducer: {

@@ -18,6 +18,7 @@ export default function MainPage() {
     const isInViewport = useInViewport(divRef);
     const [loadNext,setLoadNext] = useState(true);
     const query =  useSelector((state) => state.query);
+    const allowed_sources = useSelector((state) => state.user.allowed_sources)
     const [dateOffset,setDateOffset] = useState(undefined);
     const [isLoading, resp ,error, sendRequest] = useCustomFetch(fetch_news,
         (newData) => {
@@ -34,7 +35,7 @@ export default function MainPage() {
     );
     useEffect(() => {
         if (isInViewport && !isLoading && loadNext) {
-            sendRequest(dateOffset,load_at_once,query);
+            sendRequest(dateOffset,load_at_once,query,allowed_sources);
         }
     },[isInViewport,loadNext]);
     useEffect(() => {

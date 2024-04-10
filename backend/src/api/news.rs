@@ -14,10 +14,10 @@ pub fn news_router() -> Router<Arc<AppState>> {
         .route("/add", post(add_news))
         .route("/search_info",get(get_all_sources))
 }
-pub async fn news(State(state): State<Arc<AppState>>,Json(news_batch): Json<NewsBatchInfo>) -> Result<impl IntoResponse,ApiError> {
+pub async fn news(State(state): State<Arc<AppState>>,Json(mut news_batch): Json<NewsBatchInfo>) -> Result<impl IntoResponse,ApiError> {
     let conn = &state.db.get().await.unwrap();
     let res = conn.interact(move |conn| {
-        get_news(news_batch.start_date, news_batch.amount, &news_batch.prefs, conn)
+        get_news(news_batch.start_date, news_batch.amount, &mut news_batch.prefs, conn)
     }).await?;
     Ok(Json(res))
 }
