@@ -15,7 +15,7 @@ services:
       timeout: 5s
   backend:
     container_name: news_agg_backend
-    image: ledrose/news_add_backend:1.0.0
+    # image: ledrose/news_add_backend:1.0.0
     build:
       context: ./
       dockerfile: Dockerfile
