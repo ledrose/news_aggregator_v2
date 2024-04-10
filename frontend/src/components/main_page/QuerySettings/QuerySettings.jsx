@@ -62,10 +62,10 @@ export function QueryBlock({reset}) {
             </div>
             <Form.Group>
                 <Form.Label>Сортировка</Form.Label>
-                <Form.Select defaultValue="Date">
-                    <option value="Date">Дата</option>
-                    <option value="Title">Заголовок</option>
-                    <option value="Search Result">Релевантность для запроса</option>
+                <Form.Select defaultValue="Date" onInput={(e) => dispatch(set_filter(e.target.value))}>
+                    <option value="date">Дата</option>
+                    <option value="title">Заголовок</option>
+                    <option value="search_result">Релевантность для запроса</option>
                 </Form.Select>
             </Form.Group>
             <Row className="justify-content-center">

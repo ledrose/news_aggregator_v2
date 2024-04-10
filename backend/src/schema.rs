@@ -1,5 +1,7 @@
 // @generated automatically by Diesel CLI.
 
+use diesel::sql_types::Text;
+
 diesel::table! {
     feeds (id) {
         id -> Int4,
@@ -69,6 +71,8 @@ diesel::table! {
         role_id -> Int4,
     }
 }
+
+diesel::expression::functions::sql_function!(fn relevance_score(q: Text, body: Text) -> Integer);
 
 diesel::joinable!(feeds -> users (user_id));
 diesel::joinable!(feedsource -> feeds (feed_id));

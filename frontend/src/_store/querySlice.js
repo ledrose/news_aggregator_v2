@@ -8,7 +8,7 @@ const initialState = {
     remove_themes: [],
     start_date: null,
     end_date: null,
-    filter: ""
+    filter: "date"
 }
 
 

@@ -45,6 +45,15 @@ pub struct SearchQuery {
     pub start_date: Option<DateTime<Utc>>,
     #[serde_as(as="Option<serde_with::TimestampSeconds<i64>>")]
     pub end_date: Option<DateTime<Utc>>,
+    pub filter: Option<Filter>
+}
+
+#[derive(Debug,Serialize,Deserialize,Clone)]
+#[serde(rename_all="snake_case")]
+pub enum Filter {
+    Date,
+    Title,
+    SearchResult
 }
 
 #[derive(Debug,Deserialize)]

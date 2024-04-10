@@ -1,10 +1,9 @@
 use std::collections::HashSet;
 
 use anyhow::Ok;
-use chrono::Days;
 use diesel::{dsl::max, insert_into, BelongingToDsl, BoolExpressionMethods, ExpressionMethods, GroupedBy, PgConnection, PgTextExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper};
 use itertools::Itertools;
-use crate::{schema::{news, themes, sources, sourcethemes}, api::models::{SearchQuery, SourceThemePatch}};
+use crate::{api::models::{SearchQuery, SourceThemePatch}, schema::{news, relevance_score, sources, sourcethemes, themes}};
 
 use super::models::*;
 
@@ -55,9 +54,35 @@ pub fn get_news(mut max_news_id: Option<i32>, batch_offset: i64, amount: i64, pr
             query = query.filter(news::header.ilike(format!("%{search}%")))
         }
     }
+    query = query.filter(news::id.le(max_id));
+
+    if let Some(filter) = &prefs.filter {
+        match filter {
+            crate::api::models::Filter::Date => {
+                query = query.order_by(news::date_time.desc());
+            },
+            crate::api::models::Filter::Title => {
+                query = query.order_by(news::header.desc());
+            },
+            crate::api::models::Filter::SearchResult => {
+                if let Some(search) = &prefs.query {
+                    if !search.is_empty() {
+                        query = query.order_by(relevance_score(search,news::header).desc())
+
+                    } else {
+                        query = query.order_by(news::date_time.desc());
+                    }
+                } else {
+                    query = query.order_by(news::date_time.desc());
+                }
+            },
+        }
+    } else {
+        query = query.order_by(news::date_time.desc());
+    }
+
     let vec = query
-        .filter(news::id.le(max_id))
-        .order_by(news::date_time.desc())
+        // .order_by(news::date_time.desc())
         .offset(batch_offset)
         .limit(amount)
         .select((NewEntry::as_select(),Option::<Theme>::as_select(),Option::<Source>::as_select()))

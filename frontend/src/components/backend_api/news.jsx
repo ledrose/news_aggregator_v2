@@ -10,7 +10,8 @@ export default async function fetch_news(max_id, offset, amount,searchQuery,allo
         "remove_themes": searchQuery.remove_themes,
         "start_date": searchQuery.start_date,
         "end_date": searchQuery.end_date,
-        "filter": searchQuery.filter
+        "filter": searchQuery.filter,
+        "query": searchQuery.query
     };
     return request("news/batch","POST",{
         "max_id": max_id,
