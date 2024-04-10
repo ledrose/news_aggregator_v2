@@ -31,3 +31,4 @@ jsonwebtoken = "9.3.0"
 bcrypt = "0.15.1"
 time = "0.3.34"
 rand_core = { version = "0.6.4", features = ["std"] }
+serde_with = { version = "3.7.0", features = ["chrono"] }

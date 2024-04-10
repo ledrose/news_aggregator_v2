@@ -1,16 +1,22 @@
 use std::collections::HashSet;
 
 use anyhow::Ok;
-use chrono::{DateTime, Utc};
-use diesel::{PgConnection, BelongingToDsl, QueryDsl, RunQueryDsl, SelectableHelper, insert_into, ExpressionMethods, BoolExpressionMethods, GroupedBy, PgTextExpressionMethods};
+use chrono::Days;
+use diesel::{dsl::max, insert_into, BelongingToDsl, BoolExpressionMethods, ExpressionMethods, GroupedBy, PgConnection, PgTextExpressionMethods, QueryDsl, RunQueryDsl, SelectableHelper};
 use itertools::Itertools;
 use crate::{schema::{news, themes, sources, sourcethemes}, api::models::{SearchQuery, SourceThemePatch}};
 
 use super::models::*;
 
 
-pub fn get_news(start_date: Option<DateTime<Utc>>, amount: i64, prefs: &mut SearchQuery, conn: &mut PgConnection) -> Vec<NewsFull> {
-    let start_date = start_date.unwrap_or(chrono::Utc::now());
+pub fn get_news(mut max_news_id: Option<i32>, batch_offset: i64, amount: i64, prefs: &mut SearchQuery, conn: &mut PgConnection) -> (Vec<NewsFull>,i32) {
+    if max_news_id.is_none() {
+        max_news_id = news::table.select(max(news::id)).first::<Option<i32>>(conn).unwrap_or_default();
+        if max_news_id.is_none() {
+            return (vec![],0);
+        }
+    }
+    let max_id = max_news_id.unwrap();
     let mut query = news::table
         .left_join(sourcethemes::table.left_join(themes::table))
         .left_join(sources::table)
@@ -22,7 +28,6 @@ pub fn get_news(start_date: Option<DateTime<Utc>>, amount: i64, prefs: &mut Sear
             prefs.add_source = prefs.add_source.clone().into_iter().filter(|el| prefs.allowed_sources.contains(el)).collect_vec();
         }
     }
-    tracing::info!("Add source: {:?}",prefs.add_source);
     if !prefs.add_source.is_empty() {
         query = query.filter(sources::name.eq_any(&prefs.add_source));
     }
@@ -36,19 +41,30 @@ pub fn get_news(start_date: Option<DateTime<Utc>>, amount: i64, prefs: &mut Sear
         query = query.filter(themes::theme_name.ne_all(&prefs.remove_themes));
     }
 
+    if let Some(start_date) = prefs.start_date {
+        query = query.filter(news::date_time.ge(start_date));
+    }
+    if let Some(end_date) = prefs.end_date {
+        // tracing::info!("Start_date {:?}\nEnd_date:{:?}",prefs.start_date,prefs.end_date);
+        query = query.filter(news::date_time.le(end_date));
+    } else {
+        query = query.filter(news::date_time.le(chrono::Utc::now()));
+    }
     if let Some(search) = &prefs.query {
         if !search.is_empty() {
             query = query.filter(news::header.ilike(format!("%{search}%")))
         }
     }
-    query
-        .filter(news::date_time.lt(start_date))
+    let vec = query
+        .filter(news::id.le(max_id))
         .order_by(news::date_time.desc())
+        .offset(batch_offset)
         .limit(amount)
         .select((NewEntry::as_select(),Option::<Theme>::as_select(),Option::<Source>::as_select()))
         .load::<(NewEntry,Option<Theme>,Option<Source>)>(conn)
         .unwrap_or_default()
-        .into_iter().filter_map(|x| x.try_into().ok()).collect_vec()
+        .into_iter().filter_map(|x| x.try_into().ok()).collect_vec();
+    (vec,max_id)
 }
 
 

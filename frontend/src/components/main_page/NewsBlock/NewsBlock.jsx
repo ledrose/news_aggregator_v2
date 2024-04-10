@@ -25,11 +25,6 @@ export default function NewsBlock({news_info}) {
             </Col>
             <Col md="2">
                 <button onClick={() => {setOpen(!open)}} className="btn btn-primary" 
-                    // data-mdb-collapse-init
-                    // data-mdb-ripple-init
-                    // data-mdb-target="#collapseExample"
-                    // aria-expanded="false"
-                    // aria-controls={col_el}
                 >Открыть сдесь</button>
             </Col>
         </Row>

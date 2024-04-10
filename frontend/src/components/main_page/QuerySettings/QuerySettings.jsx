@@ -4,9 +4,14 @@ import "./QuerySettings.css"
 import useCustomFetch from "../../../_helpers/CustomFetchHook";
 import { get_search_options_api } from "../../backend_api/news";
 import { useDispatch, useSelector } from "react-redux";
-import { add_source, add_theme, remove_source, remove_theme, reset_source, reset_theme, set_query } from "../../../_store/querySlice";
+import { add_source, add_theme, remove_source, remove_theme, reset_source, reset_theme, set_query, set_start_date, set_end_date,set_filter } from "../../../_store/querySlice";
 import { useLocation, useNavigate } from "react-router-dom";
 
+
+function to_utc_seconds(time_string) {
+    let time = new Date(time_string);
+    return time.getTime()/1000+time.getTimezoneOffset()*60;
+}
 
 
 export function QueryBlock({reset}) {
@@ -48,6 +53,21 @@ export function QueryBlock({reset}) {
                 ))}
                 </Row>
             </div>
+            <div className="mb-3">
+                <Form.Label>Начальная-конечная дата</Form.Label>
+                <Row className="justify-content-start">
+                    <input className="form-control" type="date" onInput={(e) => dispatch(set_start_date(to_utc_seconds(e.target.value)))}/>
+                    <input className="form-control" type="date" onInput={(e) => dispatch(set_end_date(to_utc_seconds(e.target.value)+24*60*60))}/>
+                </Row>
+            </div>
+            <Form.Group>
+                <Form.Label>Сортировка</Form.Label>
+                <Form.Select defaultValue="Date">
+                    <option value="Date">Дата</option>
+                    <option value="Title">Заголовок</option>
+                    <option value="Search Result">Релевантность для запроса</option>
+                </Form.Select>
+            </Form.Group>
             <Row className="justify-content-center">
                 <Col md="3">
                     <Button size="lg" variant="primary" type="Submit">Найти</Button>

@@ -1,14 +1,22 @@
 use chrono::{DateTime, Utc};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
+use serde_with::serde_as;
 
-use crate::db::{feeds::models::{Feed, FeedSource}, news::models::{Source, SourceInsert, SourceTheme, Theme}, user::models::{Role, User, UserUpdate}};
+use crate::db::{feeds::models::{Feed, FeedSource}, news::models::{NewsFull, Source, SourceInsert, SourceTheme, Theme}, user::models::{Role, User, UserUpdate}};
 
 #[derive(Serialize,Deserialize,Debug)]
 pub struct NewsBatchInfo {
-    pub start_date: Option<DateTime<Utc>>,
+    pub max_id: Option<i32>,
+    pub offset: i64,
     pub amount: i64,
     pub prefs: SearchQuery
+}
+
+#[derive(Serialize,Deserialize,Debug)]
+pub struct NewsReturn {
+    pub max_id: i32,
+    pub news: Vec<NewsFull>
 }
 
 #[derive(Debug,Serialize,)]
@@ -24,6 +32,7 @@ impl From<(User,Role)> for UserAnswer {
     }
 }
 
+#[serde_as]
 #[derive(Debug,Serialize,Deserialize,Clone)]
 pub struct SearchQuery { 
     pub query: Option<String>,
@@ -31,7 +40,11 @@ pub struct SearchQuery {
     pub add_source: Vec<String>,
     pub remove_source: Vec<String>,
     pub add_themes: Vec<String>,
-    pub remove_themes: Vec<String>
+    pub remove_themes: Vec<String>,
+    #[serde_as(as="Option<serde_with::TimestampSeconds<i64>>")]
+    pub start_date: Option<DateTime<Utc>>,
+    #[serde_as(as="Option<serde_with::TimestampSeconds<i64>>")]
+    pub end_date: Option<DateTime<Utc>>,
 }
 
 #[derive(Debug,Deserialize)]
