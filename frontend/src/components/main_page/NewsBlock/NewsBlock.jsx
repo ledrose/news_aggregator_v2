@@ -48,7 +48,7 @@ function ArticleReadable({link}) {
         })
     },[]);
     return <>
-        {loaded && <div className="news-text">{page}</div>}
+        {loaded && <div className="news-text" dangerouslySetInnerHTML={{__html: page}}></div>}
         {!loaded && <div>Loading</div>}
     </>
 }

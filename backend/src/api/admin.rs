@@ -10,11 +10,12 @@ use super::models::{UserAnswer, SourcesPatch};
 // /admin
 pub fn admin_router(state: Arc<AppState>) -> Router<Arc<AppState>> {
     Router::new()
-        .route("/users", get(get_users).patch(patch_users))
-        .route("/sources",get(get_sources).patch(patch_sources))
-        .route("/themes",get(get_themes).patch(patch_themes))
-        .route("/roles",get(get_all_roles))
-        .route_layer(auth_middleware!(state,"admin"))
+        .route("/users", get(get_users).patch(patch_users).route_layer(auth_middleware!(state,"admin")))
+        .route("/roles",get(get_all_roles).route_layer(auth_middleware!(state,"admin")))
+        .route("/themes", patch(patch_themes).route_layer(auth_middleware!(state,"admin")))
+        .route("/sources", patch(patch_sources).route_layer(auth_middleware!(state,"admin")))
+        .route("/themes",get(get_themes))
+        .route("/sources",get(get_sources))
 }
 
 

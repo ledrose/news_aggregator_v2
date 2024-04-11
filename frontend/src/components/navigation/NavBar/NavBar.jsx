@@ -59,9 +59,10 @@ function SelectInfo({reset}) {
                 </NavDropdown>
             }
             <NavDropdown title={userInfo.email} id="auth-nav-dropdown">
+                <NavDropdown.Item href='/settings'>Настройки</NavDropdown.Item>
                 {userInfo.role=="admin" &&
                 <>
-                    <NavDropdown.Item className='' href='/sources'>Источники</NavDropdown.Item>
+                    <NavDropdown.Item href='/sources'>Источники</NavDropdown.Item>
                     <NavDropdown.Item href='/themes'>Темы</NavDropdown.Item>
                     <NavDropdown.Item href='/users'>Пользователи</NavDropdown.Item>
                 </>

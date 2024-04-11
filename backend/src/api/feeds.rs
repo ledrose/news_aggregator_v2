@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use axum::{extract::State, response::IntoResponse, routing::{get, post}, Extension, Json, Router};
+use serde_json::json;
 
 use crate::{auth_middleware, db::{self, user::models::{Role, User}}, error::ApiError, setup::AppState};
 
@@ -30,7 +31,7 @@ pub async fn add_user_feed(State(state): State<Arc<AppState>>,Extension(user_inf
     let _ = conn.interact(move |conn| {
 		db::feeds::feeds::add_feed(user_info.0.id,feed_info,conn)
 	}).await??;
-    Ok(())
+    Ok(Json(json!({"success":"sucess"})))
 }
 
 pub async fn update_user_feed(State(state): State<Arc<AppState>>,Extension(user_info):Extension<(User,Role)>,Json(feed_info): Json<FeedInfo>) -> Result<impl IntoResponse, ApiError> {
@@ -39,7 +40,8 @@ pub async fn update_user_feed(State(state): State<Arc<AppState>>,Extension(user_
 		let _ = db::feeds::feeds::delete_feed(user_info.0.id, &feed_info.name, conn)?;
 		db::feeds::feeds::add_feed(user_info.0.id,feed_info,conn)
 	}).await??;
-    Ok(())
+	Ok(Json(json!({"success":"sucess"})))
+
 }
 
 pub async fn delete_user_feed(State(state): State<Arc<AppState>>,Extension(user_info):Extension<(User,Role)>,Json(feed_info): Json<FeedInfo>) -> Result<impl IntoResponse, ApiError> {
@@ -47,5 +49,5 @@ pub async fn delete_user_feed(State(state): State<Arc<AppState>>,Extension(user_
     let _ = conn.interact(move |conn| {
 		db::feeds::feeds::delete_feed(user_info.0.id,&feed_info.name,conn)
 	}).await??;
-    Ok(())
+	Ok(Json(json!({"success":"sucess"})))
 }
