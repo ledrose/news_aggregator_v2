@@ -1,5 +1,13 @@
-.popup-error {
+.popup {
     background-color: var(--primary-color) !important;
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 70% !important
+}
+
+.popup-err {
+    background-color: var(--danger-color) !important;
     position: absolute;
     top: 0;
     right: 0;
@@ -21,6 +29,11 @@
 
 .popup-header {
     background-color: var(--secondary-color) !important;
+}
+
+
+.popup-header-err {
+    background-color: var(--danger-color-2) !important;
 }
 
 .popup-body {

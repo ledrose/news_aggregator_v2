@@ -5,8 +5,9 @@ import useCustomFetch from "../../_helpers/CustomFetchHook";
 import { reset, setUser } from "../../_store/userSlice";
 import { useDispatch } from "react-redux";
 import { useState } from "react";
+
 import { useForm } from "react-hook-form";
-import { setError } from "../../_store/errorSlice";
+import { setError,setInfo } from "../../_store/errorSlice";
 export default function RegisterForm() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -16,6 +17,7 @@ export default function RegisterForm() {
         dispatch(setError("Registration Succesful"));
         // dispatch(setUser({email:data.email,role:data.role,token:data.token}));
         navigate("/");
+        dispatch(setInfo("You are succesfully registered"))
     });
     const onSubmit = (data) => {
         sendRequest(data.email,data.password);

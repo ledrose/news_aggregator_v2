@@ -7,6 +7,7 @@ import { reset } from "../../../_store/errorSlice";
 export default function InfoPopover() {
     const target = useRef(null);
     const err = useSelector((state) => state.error.error);
+    const err_postfix = useSelector((state) => state.error.type)=="error"?"-err":"";
     const dispatch = useDispatch();
     useEffect(() => {
         if (err!=null) {
@@ -19,8 +20,8 @@ export default function InfoPopover() {
             <div ref={target}></div>
             <Overlay className="popup-overlay" target={target.current} show={err!=null} placement="bottom">
                 {(props) => (
-                    <Popover id="popover-basic" className="popup-error">
-                        <Popover.Header className="popup-header" as="h3">Error</Popover.Header>
+                    <Popover id="popover-basic" className={"popup"+err_postfix}>
+                        <Popover.Header className={"popup-header"+err_postfix} as="h3">Error</Popover.Header>
                         <Popover.Body className="popup-body">
                             {errText}
                         </Popover.Body>

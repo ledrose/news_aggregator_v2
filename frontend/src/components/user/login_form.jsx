@@ -8,6 +8,7 @@ import { reset, setChannel, setUser } from "../../_store/userSlice";
 import { useDispatch } from "react-redux";
 import { useState } from "react";
 import { get_channels_api } from "../backend_api/channels";
+import { setInfo } from "../../_store/errorSlice";
 export default function LoginForm() {
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -21,6 +22,7 @@ export default function LoginForm() {
         // reset();
         dispatch(setUser({email:data.email,role:data.role,token:data.token}));
         getChannels();
+        dispatch(setInfo("You are logged"))
         navigate("/");
     });
     const onSubmit = (data) => {
